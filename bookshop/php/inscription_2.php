@@ -8,11 +8,11 @@ require_once 'bibli_bookshop.php';
 error_reporting(E_ALL); // toutes les erreurs sont capturées (utile lors de la phase de développement)
 
 
-em_aff_debut('BookShop | Inscription');
+at_aff_debut('BookShop | Inscription');
 
 echo '<h1>Réception du formulaire<br>Inscription utilisateur</h1>';
 
-if( !em_parametres_controle('post', array('email', 'nomprenom', 'naissance_j', 'naissance_m', 'naissance_a', 
+if( !at_parametres_controle('post', array('email', 'nomprenom', 'naissance_j', 'naissance_m', 'naissance_a', 
                                             'passe1', 'passe2', 'btnSInscrire'))) {
     header('Location: ../index.php');
     exit();
@@ -50,17 +50,17 @@ if ($nb < LMIN_PASSWORD || $nb > LMAX_PASSWORD){
 }
 
 // vérification de la date de naissance
-if (! (em_est_entier($_POST['naissance_j']) && em_est_entre($_POST['naissance_j'], 1, 31))){
+if (! (at_est_entier($_POST['naissance_j']) && at_est_entre($_POST['naissance_j'], 1, 31))){
     header('Location: ../index.php');
     exit(); 
 }
 
-if (! (em_est_entier($_POST['naissance_m']) && em_est_entre($_POST['naissance_m'], 1, 12))){
+if (! (at_est_entier($_POST['naissance_m']) && at_est_entre($_POST['naissance_m'], 1, 12))){
     header('Location: ../index.php');
     exit(); 
 }
 $anneeCourante = (int) date('Y');
-if (! (em_est_entier($_POST['naissance_a']) && em_est_entre($_POST['naissance_a'], $anneeCourante  - NB_ANNEE_DATE_NAISSANCE + 1, $anneeCourante))){
+if (! (at_est_entier($_POST['naissance_a']) && at_est_entre($_POST['naissance_a'], $anneeCourante  - NB_ANNEE_DATE_NAISSANCE + 1, $anneeCourante))){
     header('Location: ../index.php');
     exit();  
 }
@@ -101,13 +101,13 @@ else {
 if (count($erreurs) == 0) {
     // vérification de l'unicité de l'adresse email 
     // (uniquement si pas d'autres erreurs, parce que ça coûte un bras)
-    $bd = em_bd_connecter();
+    $bd = at_bd_connecter();
 
     // pas utile, car l'adresse a déjà été vérifiée, mais tellement plus sécurisant...
-    $email = em_bd_proteger_entree($bd, $email);
+    $email = at_bd_proteger_entree($bd, $email);
     $sql = "SELECT cliID FROM clients WHERE cliEmail = '$email'"; 
 
-    $res = mysqli_query($bd,$sql) or em_bd_erreur($bd,$sql);
+    $res = mysqli_query($bd,$sql) or at_bd_erreur($bd,$sql);
     
     if (mysqli_num_rows($res) != 0) {
         $erreurs[] = 'L\'adresse email spécifiée existe déjà.';
@@ -129,7 +129,7 @@ else{
     echo '<p>Aucune erreur de saisie</p>';
 }
 
-em_aff_fin();
+at_aff_fin();
 
 ob_end_flush();
 

@@ -23,7 +23,7 @@
  *  @param  String  $css            Chemin relatif vers la feuille de style CSS.
  *  @param  String  $enfant_body    Nom du tag ouvrant à ouvrir après le tag <body> si non vide
  */
-function em_aff_debut($titre, $css = '', $enfant_body = '') {
+function at_aff_debut($titre, $css = '', $enfant_body = '') {
     echo 
         '<!doctype html>',
         '<html lang="fr">',
@@ -42,7 +42,7 @@ function em_aff_debut($titre, $css = '', $enfant_body = '') {
  *
  * @param  String  $enfant_body     Nom du tag fermant à fermer avant le tag </body> si non vide
  */
-function em_aff_fin($enfant_body = '') {
+function at_aff_fin($enfant_body = '') {
     echo ($enfant_body ? "</{$enfant_body}>" : '') ,'</body></html>';
 }
 
@@ -53,13 +53,13 @@ function em_aff_fin($enfant_body = '') {
  *
  *  @return objet   connecteur à la base de données
  */
-function em_bd_connecter() {
+function at_bd_connecter() {
     $conn = mysqli_connect(BD_SERVER, BD_USER, BD_PASS, BD_NAME);
     if ($conn !== FALSE) {
         //mysqli_set_charset() définit le jeu de caractères par défaut à utiliser lors de l'envoi
         //de données depuis et vers le serveur de base de données.
         mysqli_set_charset($conn, 'utf8') 
-        or em_bd_erreur_exit('<h4>Erreur lors du chargement du jeu de caractères utf8</h4>');
+        or at_bd_erreur_exit('<h4>Erreur lors du chargement du jeu de caractères utf8</h4>');
         return $conn;     // ===> Sortie connexion OK
     }
     // Erreur de connexion
@@ -73,7 +73,7 @@ function em_bd_connecter() {
             .'<p>Erreur MySQL numéro : '.mysqli_connect_errno()
             .'<br>'.mysqli_connect_error()
             .'</div>';
-    em_bd_erreur_exit($msg);
+    at_bd_erreur_exit($msg);
 }
 
 //____________________________________________________________________________
@@ -87,7 +87,7 @@ function em_bd_connecter() {
  *
  * @param string    $msg    Message d'erreur à afficher
  */
-function em_bd_erreur_exit($msg) {
+function at_bd_erreur_exit($msg) {
     ob_end_clean(); // Suppression de tout ce qui a pu être déja généré
 
     echo    '<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8">',
@@ -106,12 +106,12 @@ function em_bd_erreur_exit($msg) {
  * Gestion d'une erreur de requête à la base de données.
  *
  * A appeler impérativement quand un appel de mysqli_query() échoue 
- * Appelle la fonction em_bd_erreurExit() qui affiche un message d'erreur puis termine le script
+ * Appelle la fonction at_bd_erreurExit() qui affiche un message d'erreur puis termine le script
  *
  * @param objet     $bd     Connecteur sur la bd ouverte
  * @param string    $sql    requête SQL provoquant l'erreur
  */
-function em_bd_erreur($bd, $sql) {
+function at_bd_erreur($bd, $sql) {
     $errNum = mysqli_errno($bd);
     $errTxt = mysqli_error($bd);
 
@@ -137,7 +137,7 @@ function em_bd_erreur($bd, $sql) {
 
     $msg .= '</table>';
 
-    em_bd_erreur_exit($msg);    // ==> ARRET DU SCRIPT
+    at_bd_erreur_exit($msg);    // ==> ARRET DU SCRIPT
 }
 
 
@@ -159,10 +159,10 @@ function em_bd_erreur($bd, $sql) {
  *  @param  mixed  $content   la chaine à protéger ou un tableau contenant des chaines à protéger 
  *  @return mixed             la chaîne protégée ou le tableau
  */
-function em_html_proteger_sortie($content) {
+function at_html_proteger_sortie($content) {
     if (is_array($content)) {
         foreach ($content as &$value) {
-            $value = em_html_proteger_sortie($value);   
+            $value = at_html_proteger_sortie($value);   
         }
         unset ($value); // à ne pas oublier (de façon générale)
         return $content;
@@ -190,10 +190,10 @@ function em_html_proteger_sortie($content) {
 *   @param    mixed   $content    la chaine à protéger ou un tableau contenant des chaines à protéger 
 *  @return    mixed               la chaîne protégée ou le tableau
 */  
-function em_bd_proteger_entree($bd, $content) {
+function at_bd_proteger_entree($bd, $content) {
     if (is_array($content)) {
         foreach ($content as &$value) {
-            $value = em_bd_proteger_entree($bd,$value);   
+            $value = at_bd_proteger_entree($bd,$value);   
         }
         unset ($value); // à ne pas oublier (de façon générale)
         return $content;
@@ -229,7 +229,7 @@ function em_bd_proteger_entree($bd, $content) {
 * @param array     $cles_facultatives tableau contenant les clés facultatives
 * @return boolean  true si les paramètres sont corrects, false sinon
 */
-function em_parametres_controle($tab_global, $cles_obligatoires, $cles_facultatives = array()){
+function at_parametres_controle($tab_global, $cles_obligatoires, $cles_facultatives = array()){
     $x = strtolower($tab_global) == 'post' ? $_POST : $_GET;
 
     $x = array_keys($x);
@@ -252,7 +252,7 @@ function em_parametres_controle($tab_global, $cles_obligatoires, $cles_facultati
  * @param mixed     $x  valeur à tester
  * @return boolean  TRUE si entier, FALSE sinon
  */
-function em_est_entier($x) {
+function at_est_entier($x) {
     return is_numeric($x) && ($x == (int) $x);
 }
 
@@ -263,7 +263,7 @@ function em_est_entier($x) {
  * @param integer   $x  nombre ‡ tester
  * @return boolean  TRUE si ok, FALSE sinon
  */
-function em_est_entre($x, $min, $max) {
+function at_est_entre($x, $min, $max) {
     return ($x >= $min) && ($x <= $max);
 }
 
@@ -274,7 +274,7 @@ function em_est_entre($x, $min, $max) {
  *
  * @return array    Tableau à indices numériques contenant les noms des mois
  */
-function em_get_tableau_mois(){
+function at_get_tableau_mois(){
     return array('Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre');
 }
 
@@ -286,7 +286,7 @@ function em_get_tableau_mois(){
  * @param array     $options   Un tableau associatif donnant la liste des options sous la forme valeur => libelle 
  * @param string    $default   La valeur qui doit être sélectionnée par défaut. 
  */
-function em_aff_liste($nom, $options, $defaut) {
+function at_aff_liste($nom, $options, $defaut) {
     echo '<select name="', $nom, '">';
     foreach ($options as $valeur => $libelle) {
         echo '<option value="', $valeur, '"', (($defaut == $valeur) ? ' selected' : '') ,'>', $libelle, '</option>';
@@ -301,15 +301,15 @@ function em_aff_liste($nom, $options, $defaut) {
  * @param string    $nom       Le nom de la liste déroulante (valeur de l'attribut name)
  * @param int       $default   Le mois qui doit être sélectionné par défaut (1 pour janvier)
  */
-function em_aff_liste_mois($nom, $defaut) {
-    $mois = em_get_tableau_mois();
+function at_aff_liste_mois($nom, $defaut) {
+    $mois = at_get_tableau_mois();
     $m = array();
     foreach ($mois as $k => $v) {
         $m[$k+1] = mb_strtolower($v, 'UTF-8');   
         // comme on est en UTF-8 on utilise la fonction mb_strtolower
         // voir : https://www.php.net/manual/fr/function.mb-strtolower.php
     }
-    em_aff_liste($nom, $m, $defaut);
+    at_aff_liste($nom, $m, $defaut);
 }
 
 //___________________________________________________________________
@@ -322,7 +322,7 @@ function em_aff_liste_mois($nom, $defaut) {
  * @param int       $pas       Le pas d'itération (si positif, énumération croissante, sinon décroissante) 
  * @param int       $default   La valeur qui doit être sélectionnée par défaut. 
  */
-function em_aff_liste_nombre($nom, $min, $max, $pas, $defaut) {
+function at_aff_liste_nombre($nom, $min, $max, $pas, $defaut) {
     echo '<select name="', $nom, '">';
     if ($pas > 0) {
         for ($i=$min; $i <= $max; $i += $pas) {
@@ -355,11 +355,11 @@ function em_aff_liste_nombre($nom, $min, $max, $pas, $defaut) {
  * @param int       $a_s            L'année sélectionnée
  * @param int       $pas_annee      Le pas d'itération de l'année (si positif, énumération croissante, sinon décroissante) 
  */
-function em_aff_listes_date($name, $annee_min, $annee_max, $j_s = 0, $m_s = 0, $a_s = 0, $pas_annee = -1){ 
+function at_aff_listes_date($name, $annee_min, $annee_max, $j_s = 0, $m_s = 0, $a_s = 0, $pas_annee = -1){ 
     list($jj, $mm, $aa) = explode('-', date('j-n-Y'));
-    em_aff_liste_nombre("{$name}_j", 1, 31, 1, $j_s ? $j_s : $jj);
-    em_aff_liste_mois("{$name}_m", $m_s ? $m_s : $mm);
-    em_aff_liste_nombre("{$name}_a", $annee_min, $annee_max, $pas_annee, $a_s ? $a_s : $aa);
+    at_aff_liste_nombre("{$name}_j", 1, 31, 1, $j_s ? $j_s : $jj);
+    at_aff_liste_mois("{$name}_m", $m_s ? $m_s : $mm);
+    at_aff_liste_nombre("{$name}_a", $annee_min, $annee_max, $pas_annee, $a_s ? $a_s : $aa);
 }
 
 //___________________________________________________________________
@@ -379,9 +379,9 @@ function em_aff_listes_date($name, $annee_min, $annee_max, $j_s = 0, $m_s = 0, $
  * @param int       $a_s            L'année sélectionnée
  * @param int       $pas_annee      Le pas d'itération de l'année (si positif, énumération croissante, sinon décroissante) 
  */
-function em_aff_ligne_date($libelle, $name, $annee_debut, $annee_fin, $j_s = 0, $m_s = 0, $a_s = 0, $pas_annee = -1){
+function at_aff_ligne_date($libelle, $name, $annee_debut, $annee_fin, $j_s = 0, $m_s = 0, $a_s = 0, $pas_annee = -1){
     echo '<tr>', '<td>', $libelle, '</td>', '<td>';
-    em_aff_listes_date($name, $annee_debut, $annee_fin, $j_s, $m_s, $a_s, $pas_annee);
+    at_aff_listes_date($name, $annee_debut, $annee_fin, $j_s, $m_s, $a_s, $pas_annee);
     echo '</td>', '</tr>';
 }
 
@@ -398,7 +398,7 @@ function em_aff_ligne_date($libelle, $name, $annee_debut, $annee_fin, $j_s = 0, 
  * @param array     $attributs      Un tableau associatif donnant les attributs de l'input sous la forme nom => valeur
  * @param string    $prefix_id      Le préfixe utilisé pour l'id de l'input, ce qui donne un id égal à {$prefix_id}{$attributs['name']}
  */
-function em_aff_ligne_input($libelle, $attributs = array(), $prefix_id = 'text'){
+function at_aff_ligne_input($libelle, $attributs = array(), $prefix_id = 'text'){
     echo    '<tr>', 
                 '<td><label for="', $prefix_id, $attributs['name'], '">', $libelle, '</label></td>',
                 '<td><input id="', $prefix_id, $attributs['name'], '"'; 

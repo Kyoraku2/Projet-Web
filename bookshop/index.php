@@ -8,15 +8,15 @@ require_once ('./php/bibli_bookshop.php');
 
 error_reporting(E_ALL); // toutes les erreurs sont capturées (utile lors de la phase de développement)
 
-em_aff_debut('BookShop | Bienvenue', './styles/bookshop.css', 'main');
+at_aff_debut('BookShop | Bienvenue', './styles/bookshop.css', 'main');
 
-em_aff_enseigne_entete('./');
+at_aff_enseigne_entete('./');
 
-eml_aff_contenu();
+atl_aff_contenu();
 
-em_aff_pied();
+at_aff_pied();
 
-em_aff_fin('main');
+at_aff_fin('main');
 
 
 
@@ -25,7 +25,7 @@ em_aff_fin('main');
 /** 
  *  Affichage du contenu de la page
  */
-function eml_aff_contenu() {
+function atl_aff_contenu() {
     
     echo 
         '<h1>Bienvenue sur BookShop !</h1>',
@@ -52,7 +52,7 @@ function eml_aff_contenu() {
                 'titre'   => 'V pour Vendetta'),  
               ); 
 
-    eml_aff_section_livres(1, $derniersAjouts);
+    atl_aff_section_livres(1, $derniersAjouts);
     
     
     $meilleursVentes = array(
@@ -74,7 +74,7 @@ function eml_aff_contenu() {
          
               ); 
     
-    eml_aff_section_livres(2, $meilleursVentes);    
+    atl_aff_section_livres(2, $meilleursVentes);    
 }
 
 
@@ -85,7 +85,7 @@ function eml_aff_contenu() {
  *  @param  array   $tLivres    tableau contenant un élément (tableau associatif) pour chaque livre (id, auteurs(nom, prenom), titre)
  *
  */
-function eml_aff_section_livres($num, $tLivres) {
+function atl_aff_section_livres($num, $tLivres) {
     echo '<section>';
     if ($num == 1){
         echo  '<h2>Dernières nouveautés </h2>',

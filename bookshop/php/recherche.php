@@ -25,7 +25,7 @@ $erreurs = array();
 $recherche = array('type' => 'auteur', 'quoi' => '');
 
 if ($_GET){ // s'il y a des paramètres dans l'URL
-    if (! em_parametres_controle('get', array('type', 'quoi'))){
+    if (! at_parametres_controle('get', array('type', 'quoi'))){
         $erreurs[] = 'L\'URL doit être de la forme "recherche.php?type=auteur&quoi=Moore".';
     }
     else{
@@ -49,15 +49,15 @@ if ($_GET){ // s'il y a des paramètres dans l'URL
 - génération du code HTML de la page
 ------------------------------------------------------------------------------*/
 
-em_aff_debut('BookShop | Recherche', '../styles/bookshop.css', 'main');
+at_aff_debut('BookShop | Recherche', '../styles/bookshop.css', 'main');
 
-em_aff_enseigne_entete();
+at_aff_enseigne_entete();
 
-eml_aff_contenu($recherche, $erreurs);
+atl_aff_contenu($recherche, $erreurs);
 
-em_aff_pied();
+at_aff_pied();
 
-em_aff_fin('main');
+at_aff_fin('main');
 
 // fin du script --> envoi de la page 
 ob_end_flush();
@@ -71,16 +71,16 @@ ob_end_flush();
  * @param array  $recherche     critères de recherche (type et quoi)
  * @param array  $erreurs       erreurs détectées dans l'URL
  */
-function eml_aff_contenu($recherche, $erreurs) {
+function atl_aff_contenu($recherche, $erreurs) {
     
     echo '<h3>Recherche par une partie du nom d\'un auteur ou du titre</h3>'; 
     
     /* choix de la méthode get pour avoir la même forme d'URL lors d'une soumission du formulaire, 
     et lorsqu'on accède à la page suite à un clic sur un nom d'un auteur */
     echo '<form action="recherche.php" method="get">',
-            '<p>Rechercher <input type="text" name="quoi" minlength="2" value="', em_html_proteger_sortie($recherche['quoi']), '">', 
+            '<p>Rechercher <input type="text" name="quoi" minlength="2" value="', at_html_proteger_sortie($recherche['quoi']), '">', 
             ' dans '; 
-                em_aff_liste('type', array('auteur' => 'auteurs', 'titre' => 'titre'), $recherche['type']);
+                at_aff_liste('type', array('auteur' => 'auteurs', 'titre' => 'titre'), $recherche['type']);
     
     echo       '<input type="submit" value="Rechercher">', // pas d'attribut name pour qu'il n'y ait pas d'élément correspondant au bouton submit dans l'URL
                                                         // lors de la soumission du formulaire
@@ -102,9 +102,9 @@ function eml_aff_contenu($recherche, $erreurs) {
     if ($recherche['quoi']){ //si recherche à faire en base de données
     
         // ouverture de la connexion, requête
-        $bd = em_bd_connecter();
+        $bd = at_bd_connecter();
         
-        $q = em_bd_proteger_entree($bd, $recherche['quoi']); 
+        $q = at_bd_proteger_entree($bd, $recherche['quoi']); 
         
         if ($recherche['type'] == 'auteur') {
             $critere = " WHERE liID in (SELECT al_IDLivre FROM aut_livre INNER JOIN auteurs ON al_IDAuteur = auID WHERE auNom LIKE '%$q%')";
@@ -120,14 +120,14 @@ function eml_aff_contenu($recherche, $erreurs) {
                 $critere
                 ORDER BY liID";
 
-        $res = mysqli_query($bd, $sql) or em_bd_erreur($bd,$sql);
+        $res = mysqli_query($bd, $sql) or at_bd_erreur($bd,$sql);
         
         
         $lastID = -1;
         while ($t = mysqli_fetch_assoc($res)) {
             if ($t['liID'] != $lastID) {
                 if ($lastID != -1) {
-                    eml_aff_livre($livre); 
+                    atl_aff_livre($livre); 
                 }
                 $lastID = $t['liID'];
                 $livre = array( 'id' => $t['liID'], 
@@ -149,7 +149,7 @@ function eml_aff_contenu($recherche, $erreurs) {
         mysqli_close($bd);
         
         if ($lastID != -1) {
-            eml_aff_livre($livre); 
+            atl_aff_livre($livre); 
         }
         else{
             echo '<p>Aucun livre trouvé</p>';
@@ -163,10 +163,10 @@ function eml_aff_contenu($recherche, $erreurs) {
  *  @param  array       $livre      tableau associatif des infos sur un livre (id, auteurs(nom, prenom), titre, prix, pages, ISBN13, edWeb, edNom)
  *
  */
-function eml_aff_livre($livre) {
+function atl_aff_livre($livre) {
     // Le nom de l'auteur doit être encodé avec urlencode() avant d'être placé dans une URL, sans être passé auparavant par htmlentities()
     $auteurs = $livre['auteurs'];
-    $livre = em_html_proteger_sortie($livre);
+    $livre = at_html_proteger_sortie($livre);
     echo 
         '<article class="arRecherche">', 
             // TODO : à modifier pour le projet  
@@ -179,7 +179,7 @@ function eml_aff_livre($livre) {
     $i = 0;
     foreach ($auteurs as $auteur) {
         echo $i > 0 ? ', ' : '', '<a href="recherche.php?type=auteur&amp;quoi=', urlencode($auteur['nom']), '">',
-        em_html_proteger_sortie($auteur['prenom']), ' ', em_html_proteger_sortie($auteur['nom']) ,'</a>';
+        at_html_proteger_sortie($auteur['prenom']), ' ', at_html_proteger_sortie($auteur['nom']) ,'</a>';
         $i++;
     }
             

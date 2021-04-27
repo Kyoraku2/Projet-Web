@@ -18,27 +18,27 @@ error_reporting(E_ALL); // toutes les erreurs sont capturées (utile lors de la 
 ------------------------------------------------------------------------------*/
 
 // si utilisateur déjà authentifié, on le redirige vers la page index.php
-if (em_est_authentifie()){
+if (at_est_authentifie()){
     header('Location: ../index.php');
     exit();
 }
 
 // traitement si soumission du formulaire d'inscription
-$err = isset($_POST['btnSInscrire']) ? eml_traitement_inscription() : array(); 
+$err = isset($_POST['btnSInscrire']) ? atl_traitement_inscription() : array(); 
 
 /*------------------------- Etape 2 --------------------------------------------
 - génération du code HTML de la page
 ------------------------------------------------------------------------------*/
 
-em_aff_debut('BookShop | Inscription', '../styles/bookshop.css', 'main');
+at_aff_debut('BookShop | Inscription', '../styles/bookshop.css', 'main');
 
-em_aff_enseigne_entete();
+at_aff_enseigne_entete();
 
-eml_aff_contenu($err);
+atl_aff_contenu($err);
 
-em_aff_pied();
+at_aff_pied();
 
-em_aff_fin('main');
+at_aff_fin('main');
 
 ob_end_flush();
 
@@ -51,13 +51,13 @@ ob_end_flush();
  * @param   array   $err    tableau d'erreurs à afficher
  * @global  array   $_POST
  */
-function eml_aff_contenu($err) {
+function atl_aff_contenu($err) {
 
     $anneeCourante = (int) date('Y');
 
     // réaffichage des données soumises en cas d'erreur, sauf les mots de passe
-    $email = isset($_POST['email']) ? em_html_proteger_sortie(trim($_POST['email'])) : '';
-    $nomprenom = isset($_POST['nomprenom']) ? em_html_proteger_sortie(trim($_POST['nomprenom'])) : '';
+    $email = isset($_POST['email']) ? at_html_proteger_sortie(trim($_POST['email'])) : '';
+    $nomprenom = isset($_POST['nomprenom']) ? at_html_proteger_sortie(trim($_POST['nomprenom'])) : '';
     $jour = isset($_POST['naissance_j']) ? (int)$_POST['naissance_j'] : 1;
     $mois = isset($_POST['naissance_m']) ? (int)$_POST['naissance_m'] : 1;
     $annee = isset($_POST['naissance_a']) ? (int)$_POST['naissance_a'] : $anneeCourante;
@@ -78,11 +78,11 @@ function eml_aff_contenu($err) {
         '<form method="post" action="inscription.php">',
             '<table>';
 
-    em_aff_ligne_input('Votre adresse email :', array('type' => 'email', 'name' => 'email', 'value' => $email, 'required' => false));
-    em_aff_ligne_input('Choisissez un mot de passe :', array('type' => 'password', 'name' => 'passe1', 'value' => '', 'required' => false));
-    em_aff_ligne_input('Répétez le mot de passe :', array('type' => 'password', 'name' => 'passe2', 'value' => '', 'required' => false));
-    em_aff_ligne_input('Nom et prénom :', array('type' => 'text', 'name' => 'nomprenom', 'value' => $nomprenom, 'required' => false));
-    em_aff_ligne_date('Votre date de naissance :', 'naissance', $anneeCourante - NB_ANNEE_DATE_NAISSANCE + 1, $anneeCourante, $jour, $mois, $annee);
+    at_aff_ligne_input('Votre adresse email :', array('type' => 'email', 'name' => 'email', 'value' => $email, 'required' => false));
+    at_aff_ligne_input('Choisissez un mot de passe :', array('type' => 'password', 'name' => 'passe1', 'value' => '', 'required' => false));
+    at_aff_ligne_input('Répétez le mot de passe :', array('type' => 'password', 'name' => 'passe2', 'value' => '', 'required' => false));
+    at_aff_ligne_input('Nom et prénom :', array('type' => 'text', 'name' => 'nomprenom', 'value' => $nomprenom, 'required' => false));
+    at_aff_ligne_date('Votre date de naissance :', 'naissance', $anneeCourante - NB_ANNEE_DATE_NAISSANCE + 1, $anneeCourante, $jour, $mois, $annee);
             
     echo 
                 '<tr>',
@@ -105,7 +105,7 @@ function eml_aff_contenu($err) {
  *      Etape 3. ouverture de la session et redirection vers la page protegee.php 
  *
  * Toutes les erreurs détectées qui nécessitent une modification du code HTML sont considérées comme des tentatives de piratage 
- * et donc entraînent l'appel de la fonction em_session_exit() sauf les éventuelles suppressions des attributs required 
+ * et donc entraînent l'appel de la fonction at_session_exit() sauf les éventuelles suppressions des attributs required 
  * car l'attribut required est une nouveauté apparue dans la version HTML5 et nous souhaitons que l'application fonctionne également 
  * correctement sur les vieux navigateurs qui ne supportent pas encore HTML5
  *
@@ -113,11 +113,11 @@ function eml_aff_contenu($err) {
  *
  * @return array    tableau assosiatif contenant les erreurs
  */
-function eml_traitement_inscription() {
+function atl_traitement_inscription() {
 
-    if( !em_parametres_controle('post', array('email', 'nomprenom', 'naissance_j', 'naissance_m', 'naissance_a', 
+    if( !at_parametres_controle('post', array('email', 'nomprenom', 'naissance_j', 'naissance_m', 'naissance_a', 
                                               'passe1', 'passe2', 'btnSInscrire'))) {
-        em_session_exit();   
+        at_session_exit();   
     }
     
     $erreurs = array();
@@ -152,16 +152,16 @@ function eml_traitement_inscription() {
     }
 
     // vérification de la date de naissance
-    if (! (em_est_entier($_POST['naissance_j']) && em_est_entre($_POST['naissance_j'], 1, 31))){
-        em_session_exit(); 
+    if (! (at_est_entier($_POST['naissance_j']) && at_est_entre($_POST['naissance_j'], 1, 31))){
+        at_session_exit(); 
     }
     
-    if (! (em_est_entier($_POST['naissance_m']) && em_est_entre($_POST['naissance_m'], 1, 12))){
-        em_session_exit(); 
+    if (! (at_est_entier($_POST['naissance_m']) && at_est_entre($_POST['naissance_m'], 1, 12))){
+        at_session_exit(); 
     }
     $anneeCourante = (int) date('Y');
-    if (! (em_est_entier($_POST['naissance_a']) && em_est_entre($_POST['naissance_a'], $anneeCourante  - NB_ANNEE_DATE_NAISSANCE + 1, $anneeCourante))){
-        em_session_exit(); 
+    if (! (at_est_entier($_POST['naissance_a']) && at_est_entre($_POST['naissance_a'], $anneeCourante  - NB_ANNEE_DATE_NAISSANCE + 1, $anneeCourante))){
+        at_session_exit(); 
     }
     
     $jour = (int)$_POST['naissance_j'];
@@ -200,13 +200,13 @@ function eml_traitement_inscription() {
     if (count($erreurs) == 0) {
         // vérification de l'unicité de l'adresse email 
         // (uniquement si pas d'autres erreurs, parce que ça coûte un bras)
-        $bd = em_bd_connecter();
+        $bd = at_bd_connecter();
 
         // pas utile, car l'adresse a déjà été vérifiée, mais tellement plus sécurisant...
-        $email = em_bd_proteger_entree($bd, $email);
+        $email = at_bd_proteger_entree($bd, $email);
         $sql = "SELECT cliID FROM clients WHERE cliEmail = '$email'"; 
     
-        $res = mysqli_query($bd,$sql) or em_bd_erreur($bd,$sql);
+        $res = mysqli_query($bd,$sql) or at_bd_erreur($bd,$sql);
         
         if (mysqli_num_rows($res) != 0) {
             $erreurs[] = 'L\'adresse email spécifiée existe déjà.';
@@ -227,10 +227,10 @@ function eml_traitement_inscription() {
     }
     
     // pas d'erreurs ==> enregistrement de l'utilisateur
-    $nomprenom = em_bd_proteger_entree($bd, $nomprenom);
+    $nomprenom = at_bd_proteger_entree($bd, $nomprenom);
     
     $passe1 = password_hash($passe1, PASSWORD_DEFAULT);
-    $passe1 = em_bd_proteger_entree($bd, $passe1);
+    $passe1 = at_bd_proteger_entree($bd, $passe1);
     
     $aaaammjj = $annee*10000  + $mois*100 + $jour;
 
@@ -238,7 +238,7 @@ function eml_traitement_inscription() {
     $sql = "INSERT INTO clients(cliNomPrenom, cliEmail, cliDateNaissance, cliPassword, cliAdresse, cliCP, cliVille, cliPays) 
             VALUES ('$nomprenom', '$email', $aaaammjj, '$passe1', '', 0, '', '')";
             
-    mysqli_query($bd, $sql) or em_bd_erreur($bd, $sql);
+    mysqli_query($bd, $sql) or at_bd_erreur($bd, $sql);
 
     // mémorisation de l'ID dans une variable de session 
     // cette variable de session permet de savoir si le client est authentifié

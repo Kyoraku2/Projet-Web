@@ -31,7 +31,7 @@ define('NB_ANNEE_DATE_NAISSANCE', 120);
  *
  *  @param  string      $prefix     Prefixe des chemins vers les fichiers du menu (usuellement "./" ou "../").
  */
-function em_aff_enseigne_entete($prefix = '../') {
+function at_aff_enseigne_entete($prefix = '../') {
     echo 
         '<aside>',
             '<a href="http://www.facebook.com" target="_blank"></a>',
@@ -42,7 +42,7 @@ function em_aff_enseigne_entete($prefix = '../') {
         
         '<header>';
     
-    em_aff_menu($prefix);
+    at_aff_menu($prefix);
     echo    '<img src="', $prefix,'images/soustitre.png" alt="sous titre">',
         '</header>';
 }
@@ -53,7 +53,7 @@ function em_aff_enseigne_entete($prefix = '../') {
  *
  *  @param  string      $prefix     Prefixe des chemins vers les fichiers du menu (usuellement "./" ou "../").
  */
-function em_aff_menu($prefix) {      
+function at_aff_menu($prefix) {      
     echo '<nav>',    
             '<a href="', $prefix, 'index.php" title="Retour à la page d\'accueil"></a>';
     
@@ -63,7 +63,7 @@ function em_aff_menu($prefix) {
                     'compte'      => array( 'position' => 4, 'title' => 'Consulter votre compte'),
                     'deconnexion' => array( 'position' => 5, 'title' => 'Se déconnecter'));
                     
-    if (! em_est_authentifie()){
+    if (! at_est_authentifie()){
         unset($liens['compte']);
         unset($liens['deconnexion']);
         ++$liens['recherche']['position'];
@@ -86,7 +86,7 @@ function em_aff_menu($prefix) {
 /**
  *  Fonction affichant le pied de page de l'application BookShop.
  */
-function em_aff_pied() {
+function at_aff_pied() {
     echo 
         '<footer>', 
             'BookShop &amp; Partners &copy; ', date('Y'), ' - ',
@@ -103,7 +103,7 @@ function em_aff_pied() {
 * @global array    $_SESSION 
 * @return boolean  true si l'utilisateur est authentifié, false sinon
 */
-function em_est_authentifie() {
+function at_est_authentifie() {
     return  isset($_SESSION['id']);
 }
 
@@ -123,7 +123,7 @@ function em_est_authentifie() {
  * 
  * @param string    URL de la page vers laquelle l'utilisateur est redirigé
  */
-function em_session_exit($page = '../index.php') {
+function at_session_exit($page = '../index.php') {
     session_destroy();
     session_unset();
     $cookieParams = session_get_cookie_params();

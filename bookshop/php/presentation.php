@@ -8,15 +8,15 @@ require_once ('../php/bibli_bookshop.php');
 
 error_reporting(E_ALL); // toutes les erreurs sont capturées (utile lors de la phase de développement)
 
-em_aff_debut('BookShop | Présentation', '../styles/bookshop.css', 'main');
+at_aff_debut('BookShop | Présentation', '../styles/bookshop.css', 'main');
 
-em_aff_enseigne_entete();
+at_aff_enseigne_entete();
 
-eml_aff_contenu();
+atl_aff_contenu();
 
-em_aff_pied();
+at_aff_pied();
 
-em_aff_fin('main');
+at_aff_fin('main');
 
 
 
@@ -25,7 +25,7 @@ em_aff_fin('main');
 /** 
  *  Affichage du contenu de la page
  */
-function eml_aff_contenu() {
+function atl_aff_contenu() {
     
     echo 
         '<p>BookShop est une librairie virtuelle en ligne qui vous donne accès à un large choix de livres en tous genres (romans, manuels techniques, bandes dessinées, magazines), que vous pourrez commander pour vous offrir, vous faire offrir, ou offrir à vos amis.</p>',

@@ -8,24 +8,24 @@ require_once 'bibli_bookshop.php';
 error_reporting(E_ALL); // toutes les erreurs sont capturées (utile lors de la phase de développement)
 
 // si l'utilisateur n'est pas authentifié, on le redirige sur la page login.php
-if (! em_est_authentifie()){
+if (! at_est_authentifie()){
     header('Location: login.php');
     exit;
 }
 
-em_aff_debut('BookShop | Protégée');
+at_aff_debut('BookShop | Protégée');
 
 
-$bd = em_bd_connecter();
+$bd = at_bd_connecter();
 
 $sql = "SELECT *
         FROM clients
         WHERE cliID = {$_SESSION['id']}";
 
-$res = mysqli_query($bd, $sql) or em_bd_erreur($bd, $sql);
+$res = mysqli_query($bd, $sql) or at_bd_erreur($bd, $sql);
 
 $T = mysqli_fetch_assoc($res);
-$T = em_html_proteger_sortie($T);
+$T = at_html_proteger_sortie($T);
 
 mysqli_free_result($res);
 mysqli_close($bd);
@@ -40,7 +40,7 @@ foreach($T as $cle => $val){
 } 
 echo '</ul>'; 
 
-em_aff_fin();
+at_aff_fin();
 
 ob_end_flush();
 
