@@ -93,6 +93,11 @@ p {
 strong { 
     font-weight: bold;
 }
+
+em {
+    font-style: italic;
+}
+
 a {
     text-decoration: none;
     color: #3c96f1;
