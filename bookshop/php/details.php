@@ -35,6 +35,8 @@ at_aff_pied();
 
 at_aff_fin('main');
 
+ob_end_flush();
+
 /**
  *  Affichage d'un livre.
  *
