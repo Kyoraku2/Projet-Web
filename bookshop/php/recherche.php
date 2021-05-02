@@ -176,7 +176,6 @@ function atl_aff_contenu($recherche, $erreurs) {
                     break;
                 } 
             }else{
-                ++$position;
                 $livre['auteurs'][] = array('prenom' => $t['auPrenom'], 'nom' => $t['auNom']);
             }
         }

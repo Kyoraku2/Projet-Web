@@ -2,7 +2,6 @@
 
 ob_start(); //démarre la bufferisation
 session_start();
-
 require_once '../php/bibli_generale.php';
 require_once ('../php/bibli_bookshop.php');
 
@@ -49,7 +48,11 @@ function atl_aff_livre($livre) {
     $livre = at_html_proteger_sortie($livre);
     echo '<article class="arRecherche">', 
     // TODO : à modifier pour le projet  
-    '<a class="addToCart" href="#" title="Ajouter au panier"></a>',
+    '<a class="addToCart" href=#';
+    if(at_creation_panier()){
+        echo at_ajouter_article($livre['titre'],1,$livre['prix']); // Faire action sur lien, là ça envoie 1 à chaque ouverture de page
+    }
+    echo ' title="Ajouter au panier"></a>',
     '<a class="addToWishlist" href="#" title="Ajouter à la liste de cadeaux"></a>',
     '<a href="details.php?article=', $livre['id'], '" title="Voir détails"><img src="../images/livres/', $livre['id'], '_mini.jpg" alt="', 
     $livre['titre'],'"></a>',
@@ -66,7 +69,7 @@ function atl_aff_livre($livre) {
             'Pages : ', $livre['pages'], '<br>',
             'ISBN13 : ', $livre['ISBN13'], '<br>',
             '</article>','<br>',
-            '<p>Resume : <em>',$livre['resume'],'</em></p>';
+            '<p>Resume : <em>',(!empty($livre['resume']))?$livre['resume']:"Résumé à venir",'</em></p>';
 }
 
 function atl_aff_contenu($id,$erreurs){
