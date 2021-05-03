@@ -67,12 +67,14 @@ function atl_aff_contenu(){
             }
         }
         // libération des ressources
-        mysqli_free_result($res);
         if ($lastID != -1) {
             atl_aff_livre($livre); 
+            mysqli_free_result($res);
         }else{
-            echo '<p>Aucun livre trouvé</p>';
+            mysqli_free_result($res);
+            mysqli_close($bd);
         }
+
 
         //Montant total
         echo '<p>Prix total de la commande :',at_montant_global(),' &euro;</p>';
@@ -81,11 +83,12 @@ function atl_aff_contenu(){
         echo '<p><a href="',$_SERVER['REQUEST_URI'],'?action=reset" title="Vider le panier">Réinitialiser le panier</a></p>';
         //Valider le panier
         echo '<p><a href="',$_SERVER['REQUEST_URI'],'?action=validate" title="Valider le panier">Valider le panier</a></p>';
-        atl_panier_action();
+        atl_panier_action($bd);
+        mysqli_close($bd);
     }
 }
 
-function atl_panier_action(){
+function atl_panier_action($bd){
     //Retrait du panier
     if(isset($_GET['action']) && $_GET['action']==="delete"){
         at_supprimer_article($_GET['id']);
@@ -114,6 +117,39 @@ function atl_panier_action(){
     }
 
     //Valider le panier
+    if(isset($_GET['action']) && $_GET['action']==="validate"){
+        if(!at_est_authentifie()){
+            unset($_GET['action']);
+            header("Location: ./login.php");
+            return;
+        }
+        unset($_GET['action']);
+        $id=$_SESSION['id'];//at_bd_proteger_entree($bd, $_SESSION['id']);
+        $sql="SELECT cliID,cliAdresse
+        FROM clients
+        WHERE cliID = $id";
+
+        $res = mysqli_query($bd,$sql) or at_bd_erreur($bd,$sql);
+
+        if(mysqli_num_rows($res) == 0) {
+            echo 'Vous n\'avez pas renseigné votre adresse de livraison !';
+            mysqli_free_result($res);
+            return;
+        }
+        $row=mysqli_fetch_assoc($res);
+        if(empty(trim($row['cliAdresse']))){
+            echo '<p class="error">Vous n\'avez pas renseigné votre adresse de livraison.</p>';
+            mysqli_free_result($res);
+            return;
+        }
+        mysqli_free_result($res);
+        //INSERT INTO clients(cliNomPrenom, cliEmail, cliDateNaissance, cliPassword, cliAdresse, cliCP, cliVille, cliPays) 
+        //VALUES ('$nomprenom', '$email', $aaaammjj, '$passe1', '', 0, '', '')";
+        $sql="INSERT INTO "; //Manque l'insert
+
+        at_supprime_panier();
+        header("Location: $url");
+    }
 }
 
 function atl_aff_livre($livre) {
@@ -150,6 +186,5 @@ function atl_aff_livre($livre) {
 //protéger entrée/sortie
 //Gérer les condition : si id pas dans array, erreur
 //Gérer la validation du panier
-//Manque la page d'authentification
 
 ?>

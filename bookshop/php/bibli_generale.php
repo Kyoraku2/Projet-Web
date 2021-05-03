@@ -357,9 +357,9 @@ function at_aff_liste_nombre($nom, $min, $max, $pas, $defaut,$option) {
  */
 function at_aff_listes_date($name, $annee_min, $annee_max, $j_s = 0, $m_s = 0, $a_s = 0, $pas_annee = -1){ 
     list($jj, $mm, $aa) = explode('-', date('j-n-Y'));
-    at_aff_liste_nombre("{$name}_j", 1, 31, 1, $j_s ? $j_s : $jj);
+    at_aff_liste_nombre("{$name}_j", 1, 31, 1, $j_s ? $j_s : $jj,"");
     at_aff_liste_mois("{$name}_m", $m_s ? $m_s : $mm);
-    at_aff_liste_nombre("{$name}_a", $annee_min, $annee_max, $pas_annee, $a_s ? $a_s : $aa);
+    at_aff_liste_nombre("{$name}_a", $annee_min, $annee_max, $pas_annee, $a_s ? $a_s : $aa,"");
 }
 
 //___________________________________________________________________
