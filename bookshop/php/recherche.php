@@ -25,7 +25,7 @@ $erreurs = array();
 $recherche = array('type' => 'auteur', 'quoi' => '');
 
 if ($_GET){ // s'il y a des paramètres dans l'URL
-    if (! at_parametres_controle('get', array('type', 'quoi'),array('p','t'))){
+    if (! at_parametres_controle('get', array('type', 'quoi'),array('p','t','action','id'))){
         $erreurs[] = 'L\'URL doit être de la forme "recherche.php?type=auteur&quoi=Moore".';
     }
     else{
@@ -152,7 +152,7 @@ function atl_aff_contenu($recherche, $erreurs) {
             $totalRows = mysqli_num_rows($res);
         }
 
-        
+        $livres=array();
         $lastID = -1;
         while ($t = mysqli_fetch_assoc($res)) {
             if ($t['liID'] != $lastID) {
@@ -169,6 +169,7 @@ function atl_aff_contenu($recherche, $erreurs) {
                 'prix' => $t['liPrix'],
                 'auteurs' => array(array('prenom' => $t['auPrenom'], 'nom' => $t['auNom']))
                 );
+                array_push($livres,$livre);
                 // Ce test est nécessaire pour la 1ere page 
                 $nb ++;
                 echo $nb;
@@ -186,6 +187,7 @@ function atl_aff_contenu($recherche, $erreurs) {
         }else{
             echo '<p>Aucun livre trouvé</p>';
         }
+
         echo 'nb ',$nb,' ';
         echo 'pagination ',$pagination,' ';
         echo 'totalRows ',$totalRows,' ';
@@ -204,8 +206,27 @@ function atl_aff_contenu($recherche, $erreurs) {
             }
         }
         mysqli_close($bd);
-
         echo '</p>';
+        //Add to crate
+        if(at_creation_panier() && isset($_GET['action']) && isset($_GET['id']) && $_GET['action']==="add" && at_est_entier($_GET['id'])){
+            //récupération du prix pour éviter les fraudes (impossible de placer prix dans la queryString)
+            $id=-1;
+            $size=count($livres);
+            for($i=0;$i<$size;++$i){
+                if($livres[$i]['id']===$_GET['id']){
+                    $id=$i;
+                }
+            }
+            if($id!==-1){
+                at_ajouter_article($_GET['id'],1,$livres[$id]['prix']);
+                unset($_GET['action']);
+                $url=strtok($_SERVER["REQUEST_URI"], '?')."?";
+                $url.=isset($_GET['type'])?"type=".$_GET['type']:"";
+                $url.=isset($_GET['quoi'])?"&quoi=".$_GET['quoi']:"";
+                header("Location: $url");
+            }
+            
+        }
     }
 }
 
@@ -219,10 +240,11 @@ function atl_aff_livre($livre) {
     // Le nom de l'auteur doit être encodé avec urlencode() avant d'être placé dans une URL, sans être passé auparavant par htmlentities()
     $auteurs = $livre['auteurs'];
     $livre = at_html_proteger_sortie($livre);
+    echo ' id ',$livre['id'];
     echo 
         '<article class="arRecherche">', 
             // TODO : à modifier pour le projet  
-            '<a class="addToCart" href="#" title="Ajouter au panier"></a>',
+            '<a class="addToCart" href="',$_SERVER['REQUEST_URI'],'&action=add&id=',$livre['id'],'" title="Ajouter au panier"></a>',
             '<a class="addToWishlist" href="#" title="Ajouter à la liste de cadeaux"></a>',
             '<a href="details.php?article=', $livre['id'], '" title="Voir détails"><img src="../images/livres/', $livre['id'], '_mini.jpg" alt="', 
             $livre['titre'],'"></a>',

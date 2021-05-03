@@ -15,7 +15,7 @@ $erreurs = array();
 $id=-1;
 
 if($_GET){
-    if (! at_parametres_controle('get', array('article'))){
+    if (! at_parametres_controle('get', array('article'),array('action'))){
         $erreurs[] = ' - L\'URL doit être de la forme "detail.php?article=id".';
     }else{
         if(is_numeric($_GET['article'])===false){
@@ -48,11 +48,7 @@ function atl_aff_livre($livre) {
     $livre = at_html_proteger_sortie($livre);
     echo '<article class="arRecherche">', 
     // TODO : à modifier pour le projet  
-    '<a class="addToCart" href=#';
-    if(at_creation_panier()){
-        echo at_ajouter_article($livre['titre'],1,$livre['prix']); // Faire action sur lien, là ça envoie 1 à chaque ouverture de page
-    }
-    echo ' title="Ajouter au panier"></a>',
+    '<a class="addToCart" href=',$_SERVER['REQUEST_URI'],'&amp;action=add title="Ajouter au panier"></a>',
     '<a class="addToWishlist" href="#" title="Ajouter à la liste de cadeaux"></a>',
     '<a href="details.php?article=', $livre['id'], '" title="Voir détails"><img src="../images/livres/', $livre['id'], '_mini.jpg" alt="', 
     $livre['titre'],'"></a>',
@@ -86,7 +82,7 @@ function atl_aff_contenu($id,$erreurs){
     while ($t = mysqli_fetch_assoc($res)) {
         if ($t['liID'] != $lastID) {
             if ($lastID != -1) {
-                atl_aff_livre($livre); 
+                atl_aff_livre($livre);
             }
             $lastID = $t['liID'];
             $livre = array( 'id' => $t['liID'], 
@@ -108,6 +104,14 @@ function atl_aff_contenu($id,$erreurs){
         $erreurs[] = '- Aucun livre ne correspond à l\'article saisie.';
     }
     
+    //Ajout dans le panier
+    if(at_creation_panier() && isset($_GET['action'])){
+        at_ajouter_article($livre['id'],1,$livre['prix']);
+        unset($_GET['action']);
+        $url=strtok($_SERVER["REQUEST_URI"], '?')+isset($_GET['article'])?"?article=".$_GET['article']:"";
+        header("Location: $url");
+    }
+
     if ($erreurs) {
         $nbErr = count($erreurs);
         $pluriel = $nbErr > 1 ? 's':'';

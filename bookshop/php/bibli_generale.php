@@ -322,8 +322,8 @@ function at_aff_liste_mois($nom, $defaut) {
  * @param int       $pas       Le pas d'itération (si positif, énumération croissante, sinon décroissante) 
  * @param int       $default   La valeur qui doit être sélectionnée par défaut. 
  */
-function at_aff_liste_nombre($nom, $min, $max, $pas, $defaut) {
-    echo '<select name="', $nom, '">';
+function at_aff_liste_nombre($nom, $min, $max, $pas, $defaut,$option) {
+    echo '<select name="', $nom, '" ',$option,'>';
     if ($pas > 0) {
         for ($i=$min; $i <= $max; $i += $pas) {
             echo '<option value="', $i, '"', (($defaut == $i) ? ' selected' : '') ,'>', $i, '</option>';
