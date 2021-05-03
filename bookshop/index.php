@@ -6,6 +6,8 @@ session_start();
 require_once './php/bibli_generale.php';
 require_once ('./php/bibli_bookshop.php');
 
+
+
 error_reporting(E_ALL); // toutes les erreurs sont capturées (utile lors de la phase de développement)
 
 at_aff_debut('BookShop | Bienvenue', './styles/bookshop.css', 'main');
@@ -18,6 +20,7 @@ at_aff_pied();
 
 at_aff_fin('main');
 
+ob_end_flush();
 
 
 // ----------  Fonctions locales au script ----------- //
@@ -33,58 +36,111 @@ function atl_aff_contenu() {
         '<p>Passez la souris sur le logo et laissez-vous guider pour découvrir les dernières exclusivités de notre site. </p>',
         
         '<p>Nouveau venu sur BookShop ? Consultez notre <a href="./php/presentation.php">page de présentation</a> !</p>';
-    
-        
-    $derniersAjouts = array(
-        array(  'id'      => 42, 
-                'auteurs' => array( array('prenom' => 'George', 'nom' => 'Orwell')), 
-                'titre'   => '1984'),
-        array(  'id'      => 41, 
-                'auteurs' => array( array('prenom' => 'Robert', 'nom' => 'Kirkman'),
-                                    array('prenom' => 'Charlie', 'nom' => 'Adlard')), 
-                'titre'   => 'The Walking Dead - T16 Un vaste monde'),
-        array(  'id'      => 40, 
-                'auteurs' => array( array('prenom' => 'Ray', 'nom' => 'Bradbury')), 
-                'titre'   => 'L\'homme illustré'),   
-        array(  'id'      => 39, 
-                'auteurs' => array( array('prenom' => 'Alan', 'nom' => 'Moore'),
-                                    array('prenom' => 'David', 'nom' => 'Lloyd')), 
-                'titre'   => 'V pour Vendetta'),  
-              ); 
 
-    atl_aff_section_livres(1, $derniersAjouts);
+    $sql = "SELECT liID, liTitre, auNom, auPrenom, liPrix
+    FROM livres INNER JOIN aut_livre ON al_IDLivre = liID 
+                INNER JOIN auteurs ON al_IDAuteur = auID 
+    ORDER BY liID DESC LIMIT 8";
+
+    $sql2 = "SELECT ccIDLivre, liTitre, auNom, auPrenom, liPrix
+    FROM compo_commande INNER JOIN livres ON ccIDLIVRE = liID
+                        INNER JOIN aut_livre ON al_IDLivre = liID 
+                        INNER JOIN auteurs ON al_IDAuteur = auID
+    GROUP BY ccIDLivre, auNOM, auPrenom
+    ORDER BY SUM(ccQuantite) DESC,ccIDLivre
+    LIMIT 8";
+
+    $bd=at_bd_connecter();
+
+    $res = mysqli_query($bd, $sql) or at_bd_erreur($bd,$sql);
+
+    $all_books=array();
+    $tLivres = array();
+    $i=0;
+    $lastID = -1;
     
-    
-    $meilleursVentes = array(
-        array(  'id'      => 20, 
-                'auteurs' => array( array('prenom' => 'Alan', 'nom' => 'Moore'),
-                                    array('prenom' => 'Dave', 'nom' => 'Gibbons')),
-                'titre'   => 'Watchmen'),
-        array(  'id'      => 39, 
-                'auteurs' => array( array('prenom' => 'Alan', 'nom' => 'Moore'),
-                                    array('prenom' => 'David', 'nom' => 'Lloyd')), 
-                'titre'   => 'V pour Vendetta'), 
-        array(  'id'      => 27, 
-                'auteurs' => array( array('prenom' => 'Robert', 'nom' => 'Kirkman'),
-                                    array('prenom' => 'Jay', 'nom' => 'Bonansinga')), 
-                'titre'   => 'The Walking Dead - La route de Woodbury'),
-        array(  'id'      => 34, 
-                'auteurs' => array( array('prenom' => 'Aldous', 'nom' => 'Huxley')), 
-                'titre'   => 'Le meilleur des mondes'),   
-         
-              ); 
-    
-    atl_aff_section_livres(2, $meilleursVentes);    
+    while (($t = mysqli_fetch_assoc($res)) && $i<4) {
+        if ($t['liID'] != $lastID) {
+            if ($lastID != -1) {
+                $tLivres[] = $livre;
+                $all_books[] = $livre;
+                $i++;
+            }
+            $lastID = $t['liID'];
+            $livre = array( 'id' => $t['liID'], 
+                'titre' => $t['liTitre'],
+                'prix' => $t['liPrix'],
+                'auteurs' => array(array('prenom' => $t['auPrenom'], 'nom' => $t['auNom']))
+            );
+        }
+        else {
+            $livre['auteurs'][] = array('prenom' => $t['auPrenom'], 'nom' => $t['auNom']);
+        }       
+    }
+    // libération des ressources
+    mysqli_free_result($res);
+    atl_aff_section_livres(1,$tLivres);
+
+    $tLivres=array();
+    $lastID = -1;
+    $i=0;
+
+    $res = mysqli_query($bd, $sql2) or at_bd_erreur($bd,$sql2);
+
+    while (($t = mysqli_fetch_assoc($res)) && $i<4) {
+        if ($t['ccIDLivre'] != $lastID) {
+            if ($lastID != -1) {
+                $tLivres[] = $livre;
+                $size=count($all_books);
+                $contains=false;
+                for($j=0;$j<$size;++$j){
+                    if($livre['id']===$all_books[$j]['id']){
+                        $contains=true;
+                    }
+                }
+                if(!$contains){
+                    $all_books[] = $livre;
+                }
+                $i++;
+            }
+            $lastID = $t['ccIDLivre'];
+            $livre = array( 'id' => $t['ccIDLivre'], 
+                'titre' => $t['liTitre'],
+                'prix' => $t['liPrix'],
+                'auteurs' => array(array('prenom' => $t['auPrenom'], 'nom' => $t['auNom']))
+            );
+        }
+        else {
+            $livre['auteurs'][] = array('prenom' => $t['auPrenom'], 'nom' => $t['auNom']);
+        }       
+    }
+
+    mysqli_free_result($res);
+    atl_aff_section_livres(2,$tLivres);
+
+    mysqli_close($bd);
+    //Add to crate
+    if(at_creation_panier() && isset($_GET['action']) && isset($_GET['id']) && $_GET['action']==="add" && at_est_entier($_GET['id'])){
+        //récupération du prix pour éviter les fraudes (impossible de placer prix dans la queryString)
+        $id=-1;
+        $size=count($all_books);
+        for($i=0;$i<$size;++$i){
+            if($all_books[$i]['id']===$_GET['id']){
+                $id=$i;
+            }
+        }
+        if($id!==-1){
+            at_ajouter_article($_GET['id'],1,$all_books[$id]['prix']);
+            unset($_GET['action']);
+            $url=strtok($_SERVER["REQUEST_URI"], '?');
+            $url.=isset($_GET['type'])?"type=".$_GET['type']:"";
+            $url.=isset($_GET['quoi'])?"&quoi=".$_GET['quoi']:"";
+            header("Location: $url");
+        }
+        
+    }
 }
 
-
-/** 
- *  Affichage d'une section de livres
- *
- *  @param  integer $num        numéro de la section (1 pour les dernières nouveautés, 2 pour les meilleures ventes) 
- *  @param  array   $tLivres    tableau contenant un élément (tableau associatif) pour chaque livre (id, auteurs(nom, prenom), titre)
- *
- */
 function atl_aff_section_livres($num, $tLivres) {
     echo '<section>';
     if ($num == 1){
@@ -100,7 +156,7 @@ function atl_aff_section_livres($num, $tLivres) {
         echo 
             '<figure>',
                 // TODO : à modifier pour le projet  
-                '<a class="addToCart" href="#" title="Ajouter au panier"></a>',
+                '<a class="addToCart" href="',$_SERVER['REQUEST_URI'],'?action=add&id=',$livre['id'],'" title="Ajouter au panier"></a>',
                 '<a class="addToWishlist" href="#" title="Ajouter à la liste de cadeaux"></a>',
                 '<a href="php/details.php?article=', $livre['id'], '" title="Voir détails"><img src="./images/livres/', 
                 $livre['id'], '_mini.jpg" alt="', $livre['titre'],'"></a>',
@@ -122,5 +178,5 @@ function atl_aff_section_livres($num, $tLivres) {
     }
     echo '</section>';
 }
-    
+
 ?>
