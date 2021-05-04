@@ -222,7 +222,8 @@ function at_qte_article($idProd){
 
 function at_montant_global(){
     $total=0;
-    for($i = 0; $i < count($_SESSION['panier']['idProd']); $i++){
+    $size=count($_SESSION['panier']['idProd']);
+    for($i = 0; $i < $size; $i++){
        $total += $_SESSION['panier']['qteProduit'][$i]*$_SESSION['panier']['prixProduit'][$i];
     }
     return $total;
@@ -245,7 +246,12 @@ function at_montant($idProd){
 
 function at_compter_articles(){
     if (isset($_SESSION['panier'])){
-        return count($_SESSION['panier']['idProd']);
+        $total=0;
+        $size=count($_SESSION['panier']['idProd']);
+        for($i = 0; $i < $size; $i++){
+            $total += $_SESSION['panier']['qteProduit'][$i];
+        }
+        return $total;
     }
     return 0;
 }

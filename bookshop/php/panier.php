@@ -8,7 +8,7 @@ require_once ('../php/bibli_bookshop.php');
 
 error_reporting(E_ALL); // toutes les erreurs sont capturées (utile lors de la phase de développement)
 
-at_aff_debut('BookShop | Détail', '../styles/bookshop.css', 'main');
+at_aff_debut('BookShop | Panier', '../styles/bookshop.css', 'main');
 
 at_aff_enseigne_entete();
 
@@ -22,11 +22,15 @@ ob_end_flush();
 
 function atl_aff_contenu(){
     if(at_creation_panier()){
-        if(at_compter_articles()==0){
-            echo '<p>Votre panier est vide.</p>';
+        $nb_articles=at_compter_articles();
+        if($nb_articles==0){
+            echo '<h3>Votre panier est vide</h3>';
             return;
         }
-        print_r($_SESSION['panier']);
+        echo '<h3>Voici votre panier',
+        (at_est_authentifie())?"":" , connectez vous pour le valider",
+        ' (',$nb_articles,' article',($nb_articles>1)?"s)":")",
+        '</h3>';
         // ouverture de la connexion, requête
         $bd = at_bd_connecter();
     
