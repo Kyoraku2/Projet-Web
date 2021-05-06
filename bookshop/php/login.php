@@ -23,7 +23,7 @@ $err = isset($_POST['btnConnect']) ? atl_traitement_connexion() : array();
 // si utilisateur déjà authentifié, on le redirige vers la page index.php
 if (at_est_authentifie()){
     if(isset($_REQUEST["destination"])){
-         header("Location: {$_REQUEST["destination"]}");   
+        header("Location: {$_REQUEST["destination"]}");   
     }else{
         header('Location: ../index.php');
     }

@@ -70,11 +70,14 @@ function atl_aff_contenu($recherche,$erreurs){
 
     echo '<h3>Recherche d\'une liste de souhait(s) par une adresse mail complète.</h3>'; 
     echo '<form action="liste.php" method="get">',
-            '<p>Rechercher <input type="text" name="mail" minlength="5" value="', at_html_proteger_sortie($recherche['quoi']),'" required>', 
+            '<p>Rechercher <input type="text" name="quoi" minlength="5" value="', at_html_proteger_sortie($recherche['quoi']),'" required>', 
                 '<input type="submit" value="Rechercher">', // pas d'attribut name pour qu'il n'y ait pas d'élément correspondant au bouton submit dans l'URL
                                                             // lors de la soumission du formulaire
             '</p>', 
           '</form>';
+    if(!empty($_GET)){
+        echo '<p><a href="',strtok($_SERVER['REQUEST_URI'],"?"),'" title="Aller à ma liste de souhait">Ma liste de souhait</a></p>';
+    }
     if ($erreurs) {
         $nbErr = count($erreurs);
         $pluriel = $nbErr > 1 ? 's':'';
@@ -86,8 +89,53 @@ function atl_aff_contenu($recherche,$erreurs){
         echo '</p>';
         return; // ===> Fin de la fonction
     }
+    if($recherche['quoi']){
+        $mail=at_bd_proteger_entree($bd,$recherche['quoi']);
+        $sql="SELECT cliID,liID, liTitre, liPrix, liPages, liISBN13, edNom, edWeb, auNom, auPrenom 
+        FROM livres,clients,listes,auteurs,aut_livre,editeurs
+        WHERE liID=al_IDLivre
+        AND al_IDAuteur=auID
+        AND liIDEditeur=edID
+        AND liID=listIDLivre
+        AND cliID=listIDClient
+        AND cliEmail='$mail'";
+        $res = mysqli_query($bd, $sql) or at_bd_erreur($bd,$sql);
+
+        $livres=array();
+        $lastID = -1;
+        while ($t = mysqli_fetch_assoc($res)) {
+            if ($t['liID'] != $lastID) {
+                if ($lastID != -1) {
+                    atl_aff_livre($livre); 
+                }
+                $lastID = $t['liID'];
+                $livre = array( 'id' => $t['liID'], 
+                'titre' => $t['liTitre'],
+                'edNom' => $t['edNom'],
+                'edWeb' => $t['edWeb'],
+                'pages' => $t['liPages'],
+                'ISBN13' => $t['liISBN13'],
+                'prix' => $t['liPrix'],
+                'auteurs' => array(array('prenom' => $t['auPrenom'], 'nom' => $t['auNom']))
+                );
+                array_push($livres,$livre);
+                // Ce test est nécessaire pour la 1ere page 
+            }else{
+                $livre['auteurs'][] = array('prenom' => $t['auPrenom'], 'nom' => $t['auNom']);
+            }
+        }
+        // libération des ressources
+        mysqli_free_result($res);
+        if ($lastID != -1) {
+            atl_aff_livre($livre); 
+        }else{
+            echo '<p>Aucun livre trouvé</p>';
+        }
+        atl_get_action($livres,$bd);
+        mysqli_close($bd);
+    }
     if(!isset($_GET['quoi'])){
-        echo '<h3>Voici votre liste de souhait(s)</h3>';
+        echo '<h3>Voici votre liste de souhaits</h3>';
         $id=at_bd_proteger_entree($bd,$_SESSION['id']);
         $sql="SELECT cliID,liID, liTitre, liPrix, liPages, liISBN13, edNom, edWeb, auNom, auPrenom 
         FROM livres,clients,listes,auteurs,aut_livre,editeurs
@@ -121,35 +169,85 @@ function atl_aff_contenu($recherche,$erreurs){
                 $livre['auteurs'][] = array('prenom' => $t['auPrenom'], 'nom' => $t['auNom']);
             }
         }
+
         // libération des ressources
         if ($lastID != -1) {
             atl_aff_livre($livre);
             $livres[] = $livre;
-            mysqli_free_result($res);
         }else{
-            mysqli_free_result($res);
-            mysqli_close($bd);
-        }
+            echo '<p>Aucun livre trouvé dans votre liste de souhaits</p>';
 
+        }
+        mysqli_free_result($res);
+        
+        atl_get_action($livres,$bd);
         mysqli_close($bd);
+    }
+}
 
-        //Add to crate
-        if(at_creation_panier() && isset($_GET['action']) && isset($_GET['id']) && $_GET['action']==="add" && at_est_entier($_GET['id'])){
-            //récupération du prix pour éviter les fraudes (impossible de placer prix dans la queryString)
-            $id=-1;
-            $size=count($livres);
-            for($i=0;$i<$size;++$i){
-                if($livres[$i]['id']===$_GET['id']){
-                    $id=$i;
-                }
-            }
-            if($id!==-1){
-                at_ajouter_article($_GET['id'],1,$livres[$id]['prix']);
-                unset($_GET['action']);
-                $url=strtok($_SERVER["REQUEST_URI"], '?');
-                header("Location: $url");
+function atl_get_action($livres,$bd){
+    //Add to crate
+    if(at_creation_panier() && isset($_GET['action']) && isset($_GET['id']) && $_GET['action']==="add" && at_est_entier($_GET['id'])){
+        //récupération du prix pour éviter les fraudes (impossible de placer prix dans la queryString)
+        $id=-1;
+        $size=count($livres);
+        for($i=0;$i<$size;++$i){
+            if($livres[$i]['id']===$_GET['id']){
+                $id=$i;
             }
         }
+        if($id!==-1){
+            at_ajouter_article($_GET['id'],1,$livres[$id]['prix']);
+            unset($_GET['action']);
+            unset($_GET['id']);
+            header("Location: ".$_SERVER['HTTP_REFERER']);
+        }
+    }
+
+    //Remove from my list
+    if(isset($_GET['action']) && isset($_GET['id']) && $_GET['action']==="deleteW" && at_est_entier($_GET['id'])){
+        $id_livre=at_bd_proteger_entree($bd,$_GET['id']);
+        $id_client=at_bd_proteger_entree($bd,$_SESSION['id']);
+        $sql="DELETE FROM listes
+        WHERE listIDClient=$id_client
+        AND listIDLivre=$id_livre";
+        $res = mysqli_query($bd, $sql) or at_bd_erreur($bd,$sql);
+        unset($_GET['action']);
+        unset($_GET['id']);
+        header("Location: ".$_SERVER['HTTP_REFERER']);
+    }
+
+    //add to my list
+    if(isset($_GET['action']) && isset($_GET['id'])  && $_GET['action']==="addW" && at_est_entier($_GET['id'])){
+        if(!at_est_authentifie()){
+            unset($_GET['action']);
+            header("Location: ./login.php");
+            return;
+        }
+        //Check for duplicate
+        $id_livre=at_bd_proteger_entree($bd,$_GET['id']);
+        $id_client=at_bd_proteger_entree($bd,$_SESSION['id']);
+        $sql="SELECT listIDClient,listIDLivre
+        FROM listes
+        WHERE listIDClient=$id_client";
+        $res = mysqli_query($bd, $sql) or at_bd_erreur($bd,$sql);
+        $insert=true;
+
+        while (($t = mysqli_fetch_assoc($res))&&$insert){    
+            //duplicate (error messages here)
+            if($t['listIDLivre']===$id_livre){
+                $insert=false;
+            }
+        }
+        //Insert
+        if($insert){
+            $sql =  "INSERT listes (listIDLivre,listIDClient)
+            VALUES ($id_livre,$id_client)";
+            $res = mysqli_query($bd, $sql) or at_bd_erreur($bd,$sql);
+        }
+        unset($_GET['action']);
+        unset($_GET['id']);
+        header("Location: ".$_SERVER['HTTP_REFERER']);
     }
 }
 
@@ -165,11 +263,15 @@ function atl_aff_livre($livre) {
     $livre = at_html_proteger_sortie($livre);
     echo ' id ',$livre['id'];
     echo 
-        '<article class="arRecherche">', 
+        '<article class="arRecherche">';
             // TODO : à modifier pour le projet  
-            '<a class="addToCart" href="',$_SERVER['REQUEST_URI'],'?action=add&id=',$livre['id'],'" title="Ajouter au panier"></a>',
-            //'<a class="addToWishlist" href="#" title="Ajouter à la liste de cadeaux"></a>',
-            '<a href="details.php?article=', $livre['id'], '" title="Voir détails"><img src="../images/livres/', $livre['id'], '_mini.jpg" alt="', 
+            if(isset($_GET['quoi'])){
+                echo '<a class="addToCart" href="',strtok($_SERVER['REQUEST_URI']),'?action=add&id=',$livre['id'],'" title="Ajouter au panier"></a>',
+                '<a class="addToWishlist"  href=',strtok($_SERVER['REQUEST_URI']),'?action=addW&id=',$livre['id'],' title="Ajouter à la liste de cadeaux"></a>';
+            }else{
+                echo '<a class="addToCart" href="',$_SERVER['REQUEST_URI'],'?action=add&id=',$livre['id'],'" title="Ajouter au panier"></a>';
+            }
+            echo '<a href="details.php?article=', $livre['id'], '" title="Voir détails"><img src="../images/livres/', $livre['id'], '_mini.jpg" alt="',
             $livre['titre'],'"></a>',
             '<h5>', $livre['titre'], '</h5>',
             'Ecrit par : ';
@@ -184,9 +286,12 @@ function atl_aff_livre($livre) {
             'Prix : ', $livre['prix'], ' &euro;<br>',
             'Pages : ', $livre['pages'], '<br>',
             'ISBN13 : ', $livre['ISBN13'], 
+            '<input name="id" type="hidden" value="',$livre['id'],'">',
+            '<br><br><a href="',$_SERVER['REQUEST_URI'],'?action=deleteW&id=',$livre['id'],'" title="Retirer de la liste">Supprimer</a>',
         '</article>';
 }
 
 //Vérifier paramètre
 //Manque le résultat de la recherche
+//Verif genre id=498894 
 ?>

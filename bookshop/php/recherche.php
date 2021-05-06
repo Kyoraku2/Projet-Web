@@ -205,7 +205,6 @@ function atl_aff_contenu($recherche, $erreurs) {
                     $nb, '</a> ';
             }
         }
-        mysqli_close($bd);
         echo '</p>';
         //Add to crate
         if(at_creation_panier() && isset($_GET['action']) && isset($_GET['id']) && $_GET['action']==="add" && at_est_entier($_GET['id'])){
@@ -220,13 +219,44 @@ function atl_aff_contenu($recherche, $erreurs) {
             if($id!==-1){
                 at_ajouter_article($_GET['id'],1,$livres[$id]['prix']);
                 unset($_GET['action']);
-                $url=strtok($_SERVER["REQUEST_URI"], '?')."?";
-                $url.=isset($_GET['type'])?"type=".$_GET['type']:"";
-                $url.=isset($_GET['quoi'])?"&quoi=".$_GET['quoi']:"";
-                header("Location: $url");
+                header("Location: ".$_SERVER['HTTP_REFERER']);
             }
             
         }
+
+        //Add to wish
+        if(isset($_GET['action']) && isset($_GET['id'])  && $_GET['action']==="addW" && at_est_entier($_GET['id'])){
+            if(!at_est_authentifie()){
+                unset($_GET['action']);
+                header("Location: ./login.php");
+                return;
+            }
+            //Check for duplicate
+            $id_livre=at_bd_proteger_entree($bd,$_GET['id']);
+            $id_client=at_bd_proteger_entree($bd,$_SESSION['id']);
+            $sql="SELECT listIDClient,listIDLivre
+            FROM listes
+            WHERE listIDClient=$id_client";
+            $res = mysqli_query($bd, $sql) or at_bd_erreur($bd,$sql);
+            $insert=true;
+
+            while (($t = mysqli_fetch_assoc($res))&&$insert){    
+                //duplicate (error messages here)
+                if($t['listIDLivre']===$id_livre){
+                    $insert=false;
+                }
+            }
+            //Insert
+            if($insert){
+                $sql =  "INSERT listes (listIDLivre,listIDClient)
+                VALUES ($id_livre,$id_client)";
+                $res = mysqli_query($bd, $sql) or at_bd_erreur($bd,$sql);
+            }
+            unset($_GET['action']);
+            unset($_GET['id']);
+            header("Location: ".$_SERVER['HTTP_REFERER']);
+        }
+        mysqli_close($bd);
     }
 }
 
@@ -245,7 +275,7 @@ function atl_aff_livre($livre) {
         '<article class="arRecherche">', 
             // TODO : à modifier pour le projet  
             '<a class="addToCart" href="',$_SERVER['REQUEST_URI'],'&action=add&id=',$livre['id'],'" title="Ajouter au panier"></a>',
-            '<a class="addToWishlist" href="#" title="Ajouter à la liste de cadeaux"></a>',
+            '<a class="addToWishlist"  href=',$_SERVER['REQUEST_URI'],'&action=addW&id=',$livre['id'],' title="Ajouter à la liste de cadeaux"></a>',
             '<a href="details.php?article=', $livre['id'], '" title="Voir détails"><img src="../images/livres/', $livre['id'], '_mini.jpg" alt="', 
             $livre['titre'],'"></a>',
             '<h5>', $livre['titre'], '</h5>',

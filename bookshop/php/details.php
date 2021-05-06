@@ -49,7 +49,7 @@ function atl_aff_livre($livre) {
     echo '<article class="arRecherche">', 
     // TODO : à modifier pour le projet  
     '<a class="addToCart" href=',$_SERVER['REQUEST_URI'],'&amp;action=add title="Ajouter au panier"></a>',
-    '<a class="addToWishlist" href="#" title="Ajouter à la liste de cadeaux"></a>',
+    '<a class="addToWishlist"  href=',$_SERVER['REQUEST_URI'],'&amp;action=addW title="Ajouter à la liste de cadeaux"></a>',
     '<a href="details.php?article=', $livre['id'], '" title="Voir détails"><img src="../images/livres/', $livre['id'], '_mini.jpg" alt="', 
     $livre['titre'],'"></a>',
     '<h5>', $livre['titre'], '</h5>',
@@ -105,11 +105,42 @@ function atl_aff_contenu($id,$erreurs){
     }
     
     //Ajout dans le panier
-    if(at_creation_panier() && isset($_GET['action'])){
+    if(at_creation_panier() && isset($_GET['action']) && $_GET['action']==="add"){
         at_ajouter_article($livre['id'],1,$livre['prix']);
         unset($_GET['action']);
-        $url=strtok($_SERVER["REQUEST_URI"], '?')+isset($_GET['article'])?"?article=".$_GET['article']:"";
-        header("Location: $url");
+        header("Location: ".$_SERVER['HTTP_REFERER']);
+    }
+
+    //Ajout dans la wishlist
+    if(isset($_GET['action']) && $_GET['action']==="addW"){
+        if(!at_est_authentifie()){
+            unset($_GET['action']);
+            header("Location: ./login.php");
+            return;
+        }
+        //Check for duplicate
+        $id_livre=at_bd_proteger_entree($bd,$_GET['article']);
+        $id_client=at_bd_proteger_entree($bd,$_SESSION['id']);
+        $sql="SELECT listIDClient,listIDLivre
+        FROM listes
+        WHERE listIDClient=$id_client";
+        $res = mysqli_query($bd, $sql) or at_bd_erreur($bd,$sql);
+        $insert=true;
+
+        while (($t = mysqli_fetch_assoc($res))&&$insert){    
+            //duplicate (error messages here)
+            if($t['listIDLivre']===$id_livre){
+                $insert=false;
+            }
+        }
+        //insert
+        if($insert){
+            $sql =  "INSERT listes (listIDLivre,listIDClient)
+            VALUES ($id_livre,$id_client)";
+            $res = mysqli_query($bd, $sql) or at_bd_erreur($bd,$sql);
+        }
+        unset($_GET['action']);
+        header("Location: ".$_SERVER['HTTP_REFERER']);
     }
 
     if ($erreurs) {
