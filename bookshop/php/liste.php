@@ -17,25 +17,23 @@ if ($_GET){ // s'il y a des paramètres dans l'URL
     if (! at_parametres_controle('get', array(),array('quoi','action','id'))){
         $erreurs[] = 'L\'URL doit être de la forme "liste.php ou liste.php?quoi=mail".';
     }else{
-        if(!isset($_GET['action'])){
-            $recherche['quoi'] = trim($_GET['quoi']);
-            $l1 = mb_strlen($recherche['quoi'], 'UTF-8');
-            if ($l1 != mb_strlen(strip_tags($recherche['quoi']), 'UTF-8')){
-                $erreurs[] = 'Le critère de recherche ne doit pas contenir de tags HTML.';
+        $recherche['quoi'] = trim($_GET['quoi']);
+        $l1 = mb_strlen($recherche['quoi'], 'UTF-8');
+        if ($l1 != mb_strlen(strip_tags($recherche['quoi']), 'UTF-8')){
+            $erreurs[] = 'Le critère de recherche ne doit pas contenir de tags HTML.';
+        }
+        if (empty($recherche['quoi'])){
+            $erreurs[] = 'L\'adresse mail ne doit pas être vide.'; 
+        }else {
+            if (mb_strlen($recherche['quoi'], 'UTF-8') > LMAX_EMAIL){
+                $erreurs[] = 'L\'adresse mail ne peut pas dépasser '.LMAX_EMAIL.' caractères.';
             }
-            if (empty($recherche['quoi'])){
-                $erreurs[] = 'L\'adresse mail ne doit pas être vide.'; 
-            }else {
-                if (mb_strlen($recherche['quoi'], 'UTF-8') > LMAX_EMAIL){
-                    $erreurs[] = 'L\'adresse mail ne peut pas dépasser '.LMAX_EMAIL.' caractères.';
-                }
-                // la validation faite par le navigateur en utilisant le type email pour l'élément HTML input
-                // est moins forte que celle faite ci-dessous avec la fonction filter_var()
-                // Exemple : 'l@i' passe la validation faite par le navigateur et ne passe pas
-                // celle faite ci-dessous
-                if(! filter_var($recherche['quoi'], FILTER_VALIDATE_EMAIL)) {
-                    $erreurs[] = 'L\'adresse mail n\'est pas valide.';
-                }
+            // la validation faite par le navigateur en utilisant le type email pour l'élément HTML input
+            // est moins forte que celle faite ci-dessous avec la fonction filter_var()
+            // Exemple : 'l@i' passe la validation faite par le navigateur et ne passe pas
+            // celle faite ci-dessous
+            if(! filter_var($recherche['quoi'], FILTER_VALIDATE_EMAIL)) {
+                $erreurs[] = 'L\'adresse mail n\'est pas valide.';
             }
         }
     }
@@ -89,7 +87,8 @@ function atl_aff_contenu($recherche,$erreurs){
         echo '</p>';
         return; // ===> Fin de la fonction
     }
-    if($recherche['quoi']){
+    if(isset($_GET['quoi'])){
+        echo '<h3>Liste de souhaits correspondant à l\'adresse mail saisie :</h3>';
         $mail=at_bd_proteger_entree($bd,$recherche['quoi']);
         $sql="SELECT cliID,liID, liTitre, liPrix, liPages, liISBN13, edNom, edWeb, auNom, auPrenom 
         FROM livres,clients,listes,auteurs,aut_livre,editeurs
@@ -100,41 +99,7 @@ function atl_aff_contenu($recherche,$erreurs){
         AND cliID=listIDClient
         AND cliEmail='$mail'";
         $res = mysqli_query($bd, $sql) or at_bd_erreur($bd,$sql);
-
-        $livres=array();
-        $lastID = -1;
-        while ($t = mysqli_fetch_assoc($res)) {
-            if ($t['liID'] != $lastID) {
-                if ($lastID != -1) {
-                    atl_aff_livre($livre); 
-                }
-                $lastID = $t['liID'];
-                $livre = array( 'id' => $t['liID'], 
-                'titre' => $t['liTitre'],
-                'edNom' => $t['edNom'],
-                'edWeb' => $t['edWeb'],
-                'pages' => $t['liPages'],
-                'ISBN13' => $t['liISBN13'],
-                'prix' => $t['liPrix'],
-                'auteurs' => array(array('prenom' => $t['auPrenom'], 'nom' => $t['auNom']))
-                );
-                array_push($livres,$livre);
-                // Ce test est nécessaire pour la 1ere page 
-            }else{
-                $livre['auteurs'][] = array('prenom' => $t['auPrenom'], 'nom' => $t['auNom']);
-            }
-        }
-        // libération des ressources
-        mysqli_free_result($res);
-        if ($lastID != -1) {
-            atl_aff_livre($livre); 
-        }else{
-            echo '<p>Aucun livre trouvé</p>';
-        }
-        atl_get_action($livres,$bd);
-        mysqli_close($bd);
-    }
-    if(!isset($_GET['quoi'])){
+    }else{
         echo '<h3>Voici votre liste de souhaits</h3>';
         $id=at_bd_proteger_entree($bd,$_SESSION['id']);
         $sql="SELECT cliID,liID, liTitre, liPrix, liPages, liISBN13, edNom, edWeb, auNom, auPrenom 
@@ -145,44 +110,41 @@ function atl_aff_contenu($recherche,$erreurs){
         AND liID=listIDLivre
         AND cliID=listIDClient
         AND cliID=$id";
-
-        $res = mysqli_query($bd, $sql) or at_bd_erreur($bd,$sql);
-        $livres=array();
-        $lastID = -1;
-        while ($t = mysqli_fetch_assoc($res)) {
-            if ($t['liID'] != $lastID) {
-                if ($lastID != -1) {
-                    atl_aff_livre($livre); 
-                    $livres[] = $livre;
-                }
-                $lastID = $t['liID'];
-                $livre = array( 'id' => $t['liID'], 
-                'titre' => $t['liTitre'],
-                'edNom' => $t['edNom'],
-                'edWeb' => $t['edWeb'],
-                'pages' => $t['liPages'],
-                'ISBN13' => $t['liISBN13'],
-                'prix' => $t['liPrix'],
-                'auteurs' => array(array('prenom' => $t['auPrenom'], 'nom' => $t['auNom']))
-                );
-            }else{
-                $livre['auteurs'][] = array('prenom' => $t['auPrenom'], 'nom' => $t['auNom']);
-            }
-        }
-
-        // libération des ressources
-        if ($lastID != -1) {
-            atl_aff_livre($livre);
-            $livres[] = $livre;
-        }else{
-            echo '<p>Aucun livre trouvé dans votre liste de souhaits</p>';
-
-        }
-        mysqli_free_result($res);
-        
-        atl_get_action($livres,$bd);
-        mysqli_close($bd);
     }
+    $res = mysqli_query($bd, $sql) or at_bd_erreur($bd,$sql);
+    $livres=array();
+    $lastID = -1;
+    while ($t = mysqli_fetch_assoc($res)) {
+        if ($t['liID'] != $lastID) {
+            if ($lastID != -1) {
+                atl_aff_livre($livre); 
+                $livres[] = $livre;
+            }
+            $lastID = $t['liID'];
+            $livre = array( 'id' => $t['liID'], 
+            'titre' => $t['liTitre'],
+            'edNom' => $t['edNom'],
+            'edWeb' => $t['edWeb'],
+            'pages' => $t['liPages'],
+            'ISBN13' => $t['liISBN13'],
+            'prix' => $t['liPrix'],
+            'auteurs' => array(array('prenom' => $t['auPrenom'], 'nom' => $t['auNom']))
+            );
+        }else{
+            $livre['auteurs'][] = array('prenom' => $t['auPrenom'], 'nom' => $t['auNom']);
+        }
+    }
+    if ($lastID != -1) {
+        atl_aff_livre($livre);
+        $livres[] = $livre;
+    }else{
+        echo '<p>Aucun livre trouvé</p>';
+    }
+    // libération des ressources
+        
+    mysqli_free_result($res);
+    atl_get_action($livres,$bd);
+    mysqli_close($bd);
 }
 
 function atl_get_action($livres,$bd){
@@ -191,11 +153,13 @@ function atl_get_action($livres,$bd){
         //récupération du prix pour éviter les fraudes (impossible de placer prix dans la queryString)
         $id=-1;
         $size=count($livres);
+        
         for($i=0;$i<$size;++$i){
             if($livres[$i]['id']===$_GET['id']){
                 $id=$i;
             }
         }
+        echo $id;
         if($id!==-1){
             at_ajouter_article($_GET['id'],1,$livres[$id]['prix']);
             unset($_GET['action']);
@@ -266,8 +230,8 @@ function atl_aff_livre($livre) {
         '<article class="arRecherche">';
             // TODO : à modifier pour le projet  
             if(isset($_GET['quoi'])){
-                echo '<a class="addToCart" href="',strtok($_SERVER['REQUEST_URI']),'?action=add&id=',$livre['id'],'" title="Ajouter au panier"></a>',
-                '<a class="addToWishlist"  href=',strtok($_SERVER['REQUEST_URI']),'?action=addW&id=',$livre['id'],' title="Ajouter à la liste de cadeaux"></a>';
+                echo '<a class="addToCart" href="',$_SERVER['REQUEST_URI'],'&action=add&id=',$livre['id'],'" title="Ajouter au panier"></a>',
+                '<a class="addToWishlist"  href=',$_SERVER['REQUEST_URI'],'&action=addW&id=',$livre['id'],' title="Ajouter à la liste de cadeaux"></a>';
             }else{
                 echo '<a class="addToCart" href="',$_SERVER['REQUEST_URI'],'?action=add&id=',$livre['id'],'" title="Ajouter au panier"></a>';
             }
