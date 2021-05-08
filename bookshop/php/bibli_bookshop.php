@@ -86,13 +86,13 @@ function at_aff_menu($prefix) {
 /**
  *  Fonction affichant le pied de page de l'application BookShop.
  */
-function at_aff_pied() {
+function at_aff_pied($prefix='./') {
     echo 
         '<footer>', 
             'BookShop &amp; Partners &copy; ', date('Y'), ' - ',
-            '<a href="apropos.html">A propos</a> - ',
-            '<a href="confident.html">Emplois @ BookShop</a> - ',
-            '<a href="conditions.html">Conditions d\'utilisation</a>',
+            '<a href="',$prefix,'php/about.php">A propos</a> - ',
+            '<a href="',$prefix,'php/confident.php">Emplois @ BookShop</a> - ',
+            '<a href="',$prefix,'php/conditions.php">Conditions d\'utilisation</a>',
         '</footer>';
 }
 

@@ -55,7 +55,7 @@ at_aff_enseigne_entete();
 
 atl_aff_contenu($recherche, $erreurs);
 
-at_aff_pied();
+at_aff_pied('../');
 
 at_aff_fin('main');
 

@@ -30,7 +30,7 @@ if($_GET){
 
 atl_aff_contenu($id,$erreurs);
 
-at_aff_pied();
+at_aff_pied('../');
 
 at_aff_fin('main');
 

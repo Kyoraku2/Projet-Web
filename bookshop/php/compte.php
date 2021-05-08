@@ -33,7 +33,7 @@ at_aff_enseigne_entete();
 
 atl_aff_contenu();
 
-at_aff_pied();
+at_aff_pied('../');
 
 at_aff_fin('main');
 
