@@ -59,11 +59,11 @@ function atl_aff_contenu($err) {
         }
         echo '</p>';    
     }
-    
+    $url=$_SERVER['HTTP_REFERER']; // ici ça casse tout sur validator
     echo    
         '<p>Pour vous connecter, merci de fournir les informations suivantes. </p>',
         '<form method="post" action="login.php">',
-            '<input type="hidden" name="destination" value="',$_SERVER['HTTP_REFERER'],'"/>',
+            '<input type="hidden" name="destination" value="',$url,'">',
             '<table>';
     at_aff_ligne_input('Votre adresse email :', array('type' => 'email', 'name' => 'email', 'value' => $email, 'required' => false));
     at_aff_ligne_input('Choisissez un mot de passe :', array('type' => 'password', 'name' => 'passe', 'value' => '', 'required' => false));

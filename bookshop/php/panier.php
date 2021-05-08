@@ -79,7 +79,6 @@ function atl_aff_contenu(){
             mysqli_close($bd);
         }
 
-
         //Montant total
         echo '<p>Prix total de la commande :',at_montant_global(),' &euro;</p>';
 
@@ -176,7 +175,7 @@ function atl_aff_livre($livre) {
     echo    '<br>Editeur : <a class="lienExterne" href="http://', trim($livre['edWeb']), '" target="_blank">', $livre['edNom'], '</a><br>',
             'Prix : ', $livre['prix'], ' &euro;<br>',
             '<br><br><br>',
-            '<form name="order" action="" method="get" style="display: inline-block;">',
+            '<form name="order" action="panier.php" method="get" style="display: inline-block;">',
             '<input name="action" type="hidden" value="change">',
             '<input name="id" type="hidden" value="',$livre['id'],'">',
             'Quantité : ',at_aff_liste_nombre("qte",0,100,1, at_qte_article($livre['id']),"onchange=this.form.submit()"),

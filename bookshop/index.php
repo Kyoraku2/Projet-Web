@@ -117,7 +117,12 @@ function atl_aff_contenu() {
 
     mysqli_free_result($res);
     atl_aff_section_livres(2,$tLivres);
+    atl_get_action($all_books,$bd);
+    
+    mysqli_close($bd);
+}
 
+function atl_get_action($all_books,$bd){
     //Add to crate
     if(at_creation_panier() && isset($_GET['action']) && isset($_GET['id']) && $_GET['action']==="add" && at_est_entier($_GET['id'])){
         //récupération du prix pour éviter les fraudes (impossible de placer prix dans la queryString)
@@ -131,7 +136,13 @@ function atl_aff_contenu() {
         if($id!==-1){
             at_ajouter_article($_GET['id'],1,$all_books[$id]['prix']);
             unset($_GET['action']);
-            header("Location: ".$_SERVER['HTTP_REFERER']);
+            if(isset($_SERVER['HTTP_REFERER'])){
+                header("Location: ".$_SERVER['HTTP_REFERER']);
+            }else{
+                header("Location: ".strtok($_SERVER['REQUEST_URI'],'?'));
+            }
+        }else{
+            header("Location: ".strtok($_SERVER['REQUEST_URI'],'?'));
         }
     }
 
@@ -142,32 +153,36 @@ function atl_aff_contenu() {
             header("Location: ./php/login.php");
             return;
         }
-        //Check for duplicate
+        //Check for duplicate or non existant
         $id_livre=at_bd_proteger_entree($bd,$_GET['id']);
         $id_client=at_bd_proteger_entree($bd,$_SESSION['id']);
-        $sql="SELECT listIDClient,listIDLivre
-        FROM listes
-        WHERE listIDClient=$id_client";
-        $res = mysqli_query($bd, $sql) or at_bd_erreur($bd,$sql);
-        $insert=true;
+        $sql="SELECT liID
+        FROM livres
+        WHERE liID=$id_livre";
+        $res = mysqli_query($bd, $sql) or at_bd_erreur($bd,$sql);   
+        $leave=(mysqli_num_rows($res)==0)?1:0;
+        mysqli_free_result($res);
 
-        while (($t = mysqli_fetch_assoc($res))&&$insert){    
-            //duplicate (error messages here)
-            if($t['listIDLivre']===$id_livre){
-                $insert=false;
-            }
-        }
-        //Insert
-        if($insert){
-            $sql =  "INSERT listes (listIDLivre,listIDClient)
-            VALUES ($id_livre,$id_client)";
+        if($leave===0){
+            $sql="SELECT listIDClient,listIDLivre
+            FROM listes
+            WHERE listIDClient=$id_client
+            AND listIDLivre=$id_livre";
             $res = mysqli_query($bd, $sql) or at_bd_erreur($bd,$sql);
+            $insert=(mysqli_num_rows($res)==0)?1:0;
+            mysqli_free_result($res);
+            //Insert
+            if($insert===1){
+                $sql =  "INSERT listes (listIDLivre,listIDClient)
+                VALUES ($id_livre,$id_client)";
+                $res = mysqli_query($bd, $sql) or at_bd_erreur($bd,$sql);
+            }
+            unset($_GET['action']);
+            unset($_GET['id']);
+            header("Location: ".$_SERVER['HTTP_REFERER']);
         }
-        unset($_GET['action']);
-        unset($_GET['id']);
-        header("Location: ".$_SERVER['HTTP_REFERER']);
+        header("Location: ".strtok($_SERVER['REQUEST_URI'],'?'));
     }
-    mysqli_close($bd);
 }
 
 function atl_aff_section_livres($num, $tLivres) {
@@ -186,7 +201,7 @@ function atl_aff_section_livres($num, $tLivres) {
             '<figure>',
                 // TODO : à modifier pour le projet  
                 '<a class="addToCart" href="',$_SERVER['REQUEST_URI'],'?action=add&id=',$livre['id'],'" title="Ajouter au panier"></a>',
-                '<a class="addToWishlist"  href=',$_SERVER['REQUEST_URI'],'?action=addW&id=',$livre['id'],' title="Ajouter à la liste de cadeaux"></a>',
+                '<a class="addToWishlist"  href="',$_SERVER['REQUEST_URI'],'?action=addW&id=',$livre['id'],'" title="Ajouter à la liste de cadeaux"></a>',
                 '<a href="php/details.php?article=', $livre['id'], '" title="Voir détails"><img src="./images/livres/', 
                 $livre['id'], '_mini.jpg" alt="', $livre['titre'],'"></a>',
                 '<figcaption>';
@@ -210,4 +225,6 @@ function atl_aff_section_livres($num, $tLivres) {
 
 //check parametre + autres verif si besoin
 //+gestion erreurs un peu sur toutes les pages
+//Check longueur max de champs de la BD
+//check les étapes de bd sur toutes les pages/toutes les requêtes: ouverture, recupération, libération, fermeture 
 ?>

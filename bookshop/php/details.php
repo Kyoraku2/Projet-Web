@@ -48,8 +48,8 @@ function atl_aff_livre($livre) {
     $livre = at_html_proteger_sortie($livre);
     echo '<article class="arRecherche">', 
     // TODO : à modifier pour le projet  
-    '<a class="addToCart" href=',$_SERVER['REQUEST_URI'],'&amp;action=add title="Ajouter au panier"></a>',
-    '<a class="addToWishlist"  href=',$_SERVER['REQUEST_URI'],'&amp;action=addW title="Ajouter à la liste de cadeaux"></a>',
+    '<a class="addToCart" href="',$_SERVER['REQUEST_URI'],'&amp;action=add" title="Ajouter au panier"></a>',
+    '<a class="addToWishlist"  href="',$_SERVER['REQUEST_URI'],'&amp;action=addW" title="Ajouter à la liste de cadeaux"></a>',
     '<a href="details.php?article=', $livre['id'], '" title="Voir détails"><img src="../images/livres/', $livre['id'], '_mini.jpg" alt="', 
     $livre['titre'],'"></a>',
     '<h5>', $livre['titre'], '</h5>',
@@ -102,13 +102,43 @@ function atl_aff_contenu($id,$erreurs){
 
     if(empty($livre)){
         $erreurs[] = '- Aucun livre ne correspond à l\'article saisie.';
+        if(isset($_GET['action'])){
+            unset($_GET['action']);
+            header("Location: details.php?article=".$_GET['article']);
+        }
+        mysqli_free_result($res);
+        mysqli_close($bd);
+    }else{
+        atl_get_action($livre,$bd);
+    }
+    if ($erreurs) {
+        $nbErr = count($erreurs);
+        $pluriel = $nbErr > 1 ? 's':'';
+        echo '<p class="error">',
+                '<strong>Erreur',$pluriel, ' détectée', $pluriel, ' :</strong>';
+        for ($i = 0; $i < $nbErr; $i++) {
+                echo '<br>', $erreurs[$i];
+        }
+        echo '</p>';
+        return; // ===> Fin de la fonction
     }
     
+    atl_aff_livre($livre);
+    // libération des ressources
+    mysqli_free_result($res);
+    mysqli_close($bd);
+}
+
+function atl_get_action($livre,$bd){
     //Ajout dans le panier
     if(at_creation_panier() && isset($_GET['action']) && $_GET['action']==="add"){
         at_ajouter_article($livre['id'],1,$livre['prix']);
         unset($_GET['action']);
-        header("Location: ".$_SERVER['HTTP_REFERER']);
+        if(isset($_SERVER['HTTP_REFERER'])){
+            header("Location: ".$_SERVER['HTTP_REFERER']); 
+        }else{
+            header("Location: details.php?article=".$livre['id']);
+        }
     }
 
     //Ajout dans la wishlist
@@ -140,24 +170,11 @@ function atl_aff_contenu($id,$erreurs){
             $res = mysqli_query($bd, $sql) or at_bd_erreur($bd,$sql);
         }
         unset($_GET['action']);
-        header("Location: ".$_SERVER['HTTP_REFERER']);
-    }
-
-    if ($erreurs) {
-        $nbErr = count($erreurs);
-        $pluriel = $nbErr > 1 ? 's':'';
-        echo '<p class="error">',
-                '<strong>Erreur',$pluriel, ' détectée', $pluriel, ' :</strong>';
-        for ($i = 0; $i < $nbErr; $i++) {
-                echo '<br>', $erreurs[$i];
+        if(isset($_SERVER['HTTP_REFERER'])){
+            header("Location: ".$_SERVER['HTTP_REFERER']);
+        }else{
+            header("Location: details.php?article=".$livre['id']);
         }
-        echo '</p>';
-        return; // ===> Fin de la fonction
     }
-    
-    atl_aff_livre($livre);
-    // libération des ressources
-    mysqli_free_result($res);
-    mysqli_close($bd);
 }
 ?>
