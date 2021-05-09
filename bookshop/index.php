@@ -225,7 +225,6 @@ function atl_aff_section_livres($num, $tLivres) {
 
 //TODO :
 
-//Requete SQL insertion panier
 //Pagination
 //Historique commande
 //Requete SQL modification utilisateur

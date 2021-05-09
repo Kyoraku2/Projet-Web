@@ -233,7 +233,7 @@ function at_montant($idProd){
     //Si le panier existe
     $montant=0;
     if (at_creation_panier()){
-        //Si le produit existe déjà on ajoute seulement la quantité
+        //Si le produit existe déjà
         $positionProduit = array_search($idProd,  $_SESSION['panier']['idProd']);
         if ($positionProduit !== false){
            $montant=$_SESSION['panier']['qteProduit'][$positionProduit]*$_SESSION['panier']['prixProduit'][$positionProduit];

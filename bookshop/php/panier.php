@@ -2,6 +2,7 @@
 
 ob_start(); //démarre la bufferisation
 session_start();
+date_default_timezone_set('Europe/Paris');
 
 require_once '../php/bibli_generale.php';
 require_once ('../php/bibli_bookshop.php');
@@ -146,11 +147,27 @@ function atl_panier_action($bd){
             return;
         }
         mysqli_free_result($res);
-        //INSERT INTO clients(cliNomPrenom, cliEmail, cliDateNaissance, cliPassword, cliAdresse, cliCP, cliVille, cliPays) 
-        //VALUES ('$nomprenom', '$email', $aaaammjj, '$passe1', '', 0, '', '')";
-        $sql="INSERT INTO "; //Manque l'insert
+        $id=at_bd_proteger_entree($bd,$_SESSION['id']);
+        $date=date("Ymd");
+        $date=at_bd_proteger_entree($bd,$date);
+        $hour=date("Hi");
+        $hour=at_bd_proteger_entree($bd,$hour);
+        $sql="INSERT INTO `commandes` (`coIDClient`, `coDate`, `coHeure`) VALUES
+        ($id,$date,$hour)";
+
+        $res = mysqli_query($bd,$sql) or at_bd_erreur($bd,$sql);
+        $id_cmd=mysqli_insert_id($bd);
+
+        $sql="INSERT INTO `compo_commande` (`ccIDCommande`, `ccIDLivre`, `ccQuantite`) VALUES";
+        foreach($_SESSION['panier']['idProd'] as $prod){
+            $qte=at_qte_article($prod);
+            $sql.="($id_cmd,$prod,$qte),";
+        }
+        $sql=mb_substr($sql, 0, -1);
+        $res = mysqli_query($bd,$sql) or at_bd_erreur($bd,$sql);
 
         at_supprime_panier();
+        $url=strtok($_SERVER["REQUEST_URI"], '?');
         header("Location: $url");
     }
 }
