@@ -223,7 +223,14 @@ function atl_aff_section_livres($num, $tLivres) {
     echo '</section>';
 }
 
+//TODO :
+
+//Requete SQL insertion panier
+//Pagination
+//Historique commande
+//Requete SQL modification utilisateur
 //check parametre + autres verif si besoin
+//Vérification QueryString partout (avec les fonctions de merlet)
 //+gestion erreurs un peu sur toutes les pages
 //Check longueur max de champs de la BD
 //check les étapes de bd sur toutes les pages/toutes les requêtes: ouverture, recupération, libération, fermeture 

@@ -59,7 +59,11 @@ function atl_aff_contenu($err) {
         }
         echo '</p>';    
     }
-    $url=$_SERVER['HTTP_REFERER']; // ici ça casse tout sur validator
+    if(isset($_SERVER['HTTP_REFERER'])){
+        $url=$_SERVER['HTTP_REFERER']; // ici ça casse tout sur validator
+    }else{
+        $url='../index.php';
+    }
     echo    
         '<p>Pour vous connecter, merci de fournir les informations suivantes. </p>',
         '<form method="post" action="login.php">',

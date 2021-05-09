@@ -206,77 +206,81 @@ function atl_aff_contenu($recherche, $erreurs) {
             }
         }
         echo '</p>';
-        //Add to crate
-        if(at_creation_panier() && isset($_GET['action']) && isset($_GET['id']) && $_GET['action']==="add" && at_est_entier($_GET['id'])){
-            //récupération du prix pour éviter les fraudes (impossible de placer prix dans la queryString)
-            $id=-1;
-            $size=count($livres);
-            for($i=0;$i<$size;++$i){
-                if($livres[$i]['id']===$_GET['id']){
-                    $id=$i;
-                }
-            }
-            
-            unset($_GET['action']);
-            if($id!==-1){
-                at_ajouter_article($_GET['id'],1,$livres[$id]['prix']);
-                unset($_GET['action']);
-                if(isset($_SERVER['HTTP_REFERER'])){
-                    header("Location: ".$_SERVER['HTTP_REFERER']);
-                }else{
-                    header("Location: ".strtok($_SERVER['REQUEST_URI'],'?').isset($recherche['type'])?"?type=".$recherche['type']."&quoi=".$recherche['quoi']:"");
-                }
-            }
-            $url=strtok($_SERVER['REQUEST_URI'],'?');
-            $url.=isset($recherche['type'])?"?type=".$recherche['type']."&quoi=".$recherche['quoi']:"";
-            header("Location: $url");
-            
-            
-        }
+        atl_get_action($livres,$bd,$recherche);
+        mysqli_close($bd);
+    }
+}
 
-        //Add to wish
-        if(isset($_GET['action']) && isset($_GET['id'])  && $_GET['action']==="addW" && at_est_entier($_GET['id'])){
-            if(!at_est_authentifie()){
-                unset($_GET['action']);
-                header("Location: ./php/login.php");
-                return;
+function atl_get_action($livres,$bd,$recherche){
+    //Add to crate
+    if(at_creation_panier() && isset($_GET['action']) && isset($_GET['id']) && $_GET['action']==="add" && at_est_entier($_GET['id'])){
+        //récupération du prix pour éviter les fraudes (impossible de placer prix dans la queryString)
+        $id=-1;
+        $size=count($livres);
+        for($i=0;$i<$size;++$i){
+            if($livres[$i]['id']===$_GET['id']){
+                $id=$i;
             }
-            //Check for duplicate or non existant
-            $id_livre=at_bd_proteger_entree($bd,$_GET['id']);
-            $id_client=at_bd_proteger_entree($bd,$_SESSION['id']);
-            $sql="SELECT liID
-            FROM livres
-            WHERE liID=$id_livre";
-            $res = mysqli_query($bd, $sql) or at_bd_erreur($bd,$sql);   
-            $leave=(mysqli_num_rows($res)==0)?1:0;
-            mysqli_free_result($res);
-    
-            if($leave===0){
-                $sql="SELECT listIDClient,listIDLivre
-                FROM listes
-                WHERE listIDClient=$id_client
-                AND listIDLivre=$id_livre";
-                $res = mysqli_query($bd, $sql) or at_bd_erreur($bd,$sql);
-                $insert=(mysqli_num_rows($res)==0)?1:0;
-                mysqli_free_result($res);
-                //Insert
-                if($insert===1){
-                    $sql =  "INSERT listes (listIDLivre,listIDClient)
-                    VALUES ($id_livre,$id_client)";
-                    $res = mysqli_query($bd, $sql) or at_bd_erreur($bd,$sql);
-                }
-                unset($_GET['action']);
-                unset($_GET['id']);
-            }
+        }
+        
+        unset($_GET['action']);
+        if($id!==-1){
+            at_ajouter_article($_GET['id'],1,$livres[$id]['prix']);
+            unset($_GET['action']);
             if(isset($_SERVER['HTTP_REFERER'])){
                 header("Location: ".$_SERVER['HTTP_REFERER']);
             }else{
-                $url=strtok($_SERVER['REQUEST_URI'],'?');
-                $url.=isset($recherche['type'])?"?type=".$recherche['type']."&quoi=".$recherche['quoi']:"";
-                header("Location: $url");
+                header("Location: ".strtok($_SERVER['REQUEST_URI'],'?').isset($recherche['type'])?"?type=".$recherche['type']."&quoi=".$recherche['quoi']:"");
             }
         }
-        mysqli_close($bd);
+        $url=strtok($_SERVER['REQUEST_URI'],'?');
+        $url.=isset($recherche['type'])?"?type=".$recherche['type']."&quoi=".$recherche['quoi']:"";
+        header("Location: $url");
+        
+        
+    }
+
+    //Add to wish
+    if(isset($_GET['action']) && isset($_GET['id'])  && $_GET['action']==="addW" && at_est_entier($_GET['id'])){
+        if(!at_est_authentifie()){
+            unset($_GET['action']);
+            header("Location: ./login.php");
+            return;
+        }
+        //Check for duplicate or non existant
+        $id_livre=at_bd_proteger_entree($bd,$_GET['id']);
+        $id_client=at_bd_proteger_entree($bd,$_SESSION['id']);
+        $sql="SELECT liID
+        FROM livres
+        WHERE liID=$id_livre";
+        $res = mysqli_query($bd, $sql) or at_bd_erreur($bd,$sql);   
+        $leave=(mysqli_num_rows($res)==0)?1:0;
+        mysqli_free_result($res);
+
+        if($leave===0){
+            $sql="SELECT listIDClient,listIDLivre
+            FROM listes
+            WHERE listIDClient=$id_client
+            AND listIDLivre=$id_livre";
+            $res = mysqli_query($bd, $sql) or at_bd_erreur($bd,$sql);
+            $insert=(mysqli_num_rows($res)==0)?1:0;
+            mysqli_free_result($res);
+            //Insert
+            if($insert===1){
+                $sql =  "INSERT listes (listIDLivre,listIDClient)
+                VALUES ($id_livre,$id_client)";
+                $res = mysqli_query($bd, $sql) or at_bd_erreur($bd,$sql);
+            }
+            unset($_GET['action']);
+            unset($_GET['id']);
+        }
+        if(isset($_SERVER['HTTP_REFERER'])){
+            header("Location: ".$_SERVER['HTTP_REFERER']);
+        }else{
+            $url=strtok($_SERVER['REQUEST_URI'],'?');
+            $url.=isset($recherche['type'])?"?type=".$recherche['type']."&quoi=".$recherche['quoi']:"";
+            header("Location: $url");
+        }
     }
 }
 
