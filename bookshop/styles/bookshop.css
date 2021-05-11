@@ -399,6 +399,10 @@ article.arCart {           /* utilisé dans panier.php */
     border-top: solid 1px gray;
 }
 
+article.arCart:last-of-type{           /* utilisé dans panier.php */
+    border-bottom: solid 1px gray;
+}
+
 article.arCart img{
     float: left; 
     margin: 0 10px 10px 0; 
