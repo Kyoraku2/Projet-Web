@@ -324,7 +324,7 @@ function atl_traitement_connexion($t,$bd) {
     mysqli_close($bd);
     
     // redirection vers la page protegee.php
-    header('Location: compte.php'); //TODO : à modifier dans le projet
+    header('Location: compte.php');
     exit();
 }
 
