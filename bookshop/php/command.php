@@ -7,14 +7,6 @@ require_once ('../php/bibli_bookshop.php');
 
 error_reporting(E_ALL); // toutes les erreurs sont capturées (utile lors de la phase de développement)
 
-if(!at_est_authentifie()){
-    if(isset($_SERVER['HTTP_REFERER'])){
-        header('Location: '.$_SERVER['HTTP_REFERER']);
-    }else{
-        header('Location: ../index.php');
-    }
-}
-
 at_aff_debut('BookShop | Historique', '../styles/bookshop.css', 'main');
 
 at_aff_enseigne_entete();
@@ -28,6 +20,13 @@ at_aff_fin('main');
 ob_end_flush();
 
 function atl_aff_contenu(){
+    if(!at_est_authentifie()){
+        echo '<h3>Vous devez vous identidier pour pouvoir accéder à votre liste de commande(s)<br>
+        Vous allez être redirigé vers la page de connexion dans 5 secondes</h3>',
+        '<p>Cliquez <a href="login.php" title="Connexion">ici</a> si la redirection vers la page de connexion ne fonctionne pas</p>';
+        header("Refresh:5;url=./login.php");
+        return;
+    }
     echo '<h1>Historique des commandes</h1>';
     $bd = at_bd_connecter();
     $id=at_bd_proteger_entree($bd,$_SESSION['id']);

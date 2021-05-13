@@ -424,6 +424,10 @@ article.arRecherche .addToCart, article.arRecherche .addToWishlist{
     right: 10px;
 }
 
+.pagination{
+    text-align: center;
+}
+
 /**********************************************************
                     Formulaires
 **********************************************************/
@@ -539,6 +543,7 @@ input[type=submit], input[type=reset] {
     -o-transition: all 0.3s;
     transition: all 0.3s;
 }
+
 
 /**********************************************************
                         Pied de page

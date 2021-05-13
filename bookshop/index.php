@@ -189,9 +189,8 @@ function atl_aff_section_livres($num, $tLivres) {
 /*** Important
  - Ajout de page intermédiaires lors d'un ajout dans le panier/wishlist
  - Redirection login/inscription cassé j'ai l'impression :
- - Si on va depuis recherche dans login puis dans inscription, on est sensé
- - être redirigé vers recherche au final 
- - Pagination
+   Si on va depuis recherche dans login puis dans inscription, on est sensé
+   être redirigé vers recherche au final 
 ***/
 
 /*** Modification avant rendu 

@@ -57,8 +57,10 @@ ob_end_flush();
 
 function atl_aff_contenu($recherche,$erreurs){
     if(!at_est_authentifie()){
-        echo '<h3>Vous devez vous identidier pour pouvoir accéder à votre liste de souhait(s)</h3>',
-        '<p>Cliquez <a href="login.php" title="Connexion">ici</a> pour aller à la page de connexion</p>';
+        echo '<h3>Vous devez vous identidier pour pouvoir accéder à votre liste de souhait(s)<br>
+        Vous allez être redirigé vers la page de connexion dans 5 secondes</h3>',
+        '<p>Cliquez <a href="login.php" title="Connexion">ici</a> si la redirection vers la page de connexion ne fonctionne pas</p>';
+        header("Refresh:5;url=./login.php");
         return;
     }
     $id=0;

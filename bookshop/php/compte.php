@@ -17,12 +17,6 @@ error_reporting(E_ALL); // toutes les erreurs sont capturées (utile lors de la 
 - vérifications diverses et traitement des soumissions
 ------------------------------------------------------------------------------*/
 
-// si utilisateur n'est pas authentifié, on le redirige vers la page login.php
-if (!at_est_authentifie()){
-    header("Location: ./login.php");
-    exit();
-}
-
 /*------------------------- Etape 2 --------------------------------------------
 - génération du code HTML de la page
 ------------------------------------------------------------------------------*/

@@ -72,31 +72,13 @@ ob_end_flush();
  * @param array  $erreurs       erreurs détectées dans l'URL
  */
 function atl_aff_contenu($recherche, $erreurs) {
-    $pagination = 5;
-    $totalRows = -1;
-    $position = -1;
-    $nb = 0;
-
-    //-- Calcul des limites ------------------------------
-    // Au 1er passage il n'y a pas de paramètres dans l'url
-    // et le tableau $_GET est donc vide.
-
-    if (isset($_GET['t']) && at_est_entier($_GET['t'])) {
-        $totalRows = (int) $_GET['t'];
-    }
-
-    if (isset($_GET['p']) && at_est_entier($_GET['p'])) {
+    $position=-1;
+    $totalBooks=-1;
+    $pagination=5;
+    if(isset($_GET['p']) && at_est_entier($_GET['p'])) {
         $position = (int) $_GET['p'];
     }
 
-    // Soit 1er passage, soit paramètres GET "modifiés"
-    if ($totalRows < 0 || $position < 0) {
-        $totalRows = $position = 0;
-    }
-    // Vérification paramètres GET valides
-    if ($position >= $totalRows) {
-        $totalRows = $position = 0;
-    }
     echo '<h3>Recherche par une partie du nom d\'un auteur ou du titre</h3>'; 
     
     /* choix de la méthode get pour avoir la même forme d'URL lors d'une soumission du formulaire, 
@@ -142,22 +124,15 @@ function atl_aff_contenu($recherche, $erreurs) {
                             INNER JOIN auteurs ON al_IDAuteur = auID 
                 $critere
                 ORDER BY liID";
-        // Si pas 1er passage : ajoute clause LIMIT
-        if ($totalRows > 0) {
-            $sql .= " LIMIT $position, $pagination";
-        }
+
         $res = mysqli_query($bd, $sql) or at_bd_erreur($bd,$sql);
-        // 1er passage : récup du nombre total de livres
-        if ($totalRows==0) {
-            $totalRows = mysqli_num_rows($res);
-        }
 
         $livres=array();
         $lastID = -1;
         while ($t = mysqli_fetch_assoc($res)) {
             if ($t['liID'] != $lastID) {
                 if ($lastID != -1) {
-                    atl_aff_livre($livre); 
+                    $livres[]=$livre;
                 }
                 $lastID = $t['liID'];
                 $livre = array( 'id' => $t['liID'], 
@@ -169,13 +144,6 @@ function atl_aff_contenu($recherche, $erreurs) {
                 'prix' => $t['liPrix'],
                 'auteurs' => array(array('prenom' => $t['auPrenom'], 'nom' => $t['auNom']))
                 );
-                array_push($livres,$livre);
-                // Ce test est nécessaire pour la 1ere page 
-                $nb ++;
-                echo $nb;
-                if ($nb >= $pagination) {
-                    break;
-                } 
             }else{
                 $livre['auteurs'][] = array('prenom' => $t['auPrenom'], 'nom' => $t['auNom']);
             }
@@ -183,25 +151,33 @@ function atl_aff_contenu($recherche, $erreurs) {
         // libération des ressources
         mysqli_free_result($res);
         if ($lastID != -1) {
-            atl_aff_livre($livre); 
+            $livres[]=$livre;
         }else{
             echo '<p>Aucun livre trouvé</p>';
         }
 
-        echo 'nb ',$nb,' ';
-        echo 'pagination ',$pagination,' ';
-        echo 'totalRows ',$totalRows,' ';
-        //echo 'totalNoDup ',$totalNoDup,' ';
-        echo 'position ',$position,' ';
-        //-- Affichage pagination ---------------------------
+        $totalBooks=count($livres);
+        if($position>$totalBooks){
+            $position=0;
+        }
+        if($position%$pagination!==0){
+            $position-=$position%$pagination;
+        }
+        
+        for($i=$position;$i<$position+$pagination;$i++){
+            if($i>=$totalBooks){
+                break;
+            }
+            atl_aff_livre($livres[$i]);
+        }
         echo '<p class="pagination">Pages : ';
-        for ($i = 0, $nb = 0; $i < $totalRows; $i += $pagination) {
+        for ($i = 0, $nb = 0; $i < $totalBooks; $i += $pagination) {
             $nb ++;
             if ($i == $position) {  // page en cours, pas de lien
                 echo "$nb ";
             } else {
                 echo '<a href="', $_SERVER['PHP_SELF'],
-                    '?type=',$recherche['type'],'&quoi=',$recherche['quoi'],'&t=', $totalRows, '&p=', $i, '">', 
+                    '?type=',$recherche['type'],'&quoi=',$recherche['quoi'],'&p=', $i, '">', 
                     $nb, '</a> ';
             }
         }
@@ -249,7 +225,6 @@ function atl_aff_livre($livre) {
     // Le nom de l'auteur doit être encodé avec urlencode() avant d'être placé dans une URL, sans être passé auparavant par htmlentities()
     $auteurs = $livre['auteurs'];
     $livre = at_html_proteger_sortie($livre);
-    echo ' id ',$livre['id'];
     echo 
         '<article class="arRecherche">', 
             // TODO : à modifier pour le projet  
