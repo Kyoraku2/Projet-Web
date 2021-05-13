@@ -169,15 +169,11 @@ function atl_get_action($livres,$bd,$recherche){
             }
         }
         if($id!==-1){
-            at_ajouter_article($_GET['id'],1,$livres[$id]['prix']);
-            unset($_GET['action']);
-            unset($_GET['id']);
-        }
-        if(isset($_SERVER['HTTP_REFERER'])){
-            header("Location: ".$_SERVER['HTTP_REFERER']);
+            at_button_ajouter_panier($_GET['id'],$livres[$id]['prix'],array('quoi'));
         }else{
             $url=strtok($_SERVER['REQUEST_URI'],'?').isset($$_GET["quoi"])?"?quoi=".urlencode($_GET['quoi']):"";
             header("Location: $url");
+            echo"wsh";
         }
     }
 
@@ -214,43 +210,7 @@ function atl_get_action($livres,$bd,$recherche){
 
     //add to my list
     if(isset($_GET['action']) && isset($_GET['id'])  && $_GET['action']==="addW" && at_est_entier($_GET['id'])){
-        if(!at_est_authentifie()){
-            unset($_GET['action']);
-            header("Location: ./php/login.php");
-            return;
-        }
-        //Check for duplicate or non existant
-        $id_livre=at_bd_proteger_entree($bd,$_GET['id']);
-        $id_client=at_bd_proteger_entree($bd,$_SESSION['id']);
-        $sql="SELECT liID
-        FROM livres
-        WHERE liID=$id_livre";
-        $res = mysqli_query($bd, $sql) or at_bd_erreur($bd,$sql);   
-        $leave=(mysqli_num_rows($res)==0)?1:0;
-        mysqli_free_result($res);
-
-        if($leave===0){
-            $sql="SELECT listIDClient,listIDLivre
-            FROM listes
-            WHERE listIDClient=$id_client
-            AND listIDLivre=$id_livre";
-            $res = mysqli_query($bd, $sql) or at_bd_erreur($bd,$sql);
-            $insert=(mysqli_num_rows($res)==0)?1:0;
-            mysqli_free_result($res);
-            //Insert
-            if($insert===1){
-                $sql =  "INSERT listes (listIDLivre,listIDClient)
-                VALUES ($id_livre,$id_client)";
-                $res = mysqli_query($bd, $sql) or at_bd_erreur($bd,$sql);
-            }
-            unset($_GET['action']);
-            unset($_GET['id']);
-            header("Location: ".$_SERVER['HTTP_REFERER']);
-        }
-        unset($_GET['action']);
-        unset($_GET['id']);
-        $url=strtok($_SERVER['REQUEST_URI'],'?').isset($_GET["quoi"])?"?quoi=".urlencode($_GET['quoi']):"";
-        header("Location: $url");
+        at_ajouter_wishlist($bd,$_GET['id'],array('quoi'));
     }
 }
 

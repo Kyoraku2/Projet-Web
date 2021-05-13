@@ -25,7 +25,10 @@ define('LMAX_PASSWORD', 20);
 
 define('NB_ANNEE_DATE_NAISSANCE', 120);
  
-
+define('LMAX_ADRESSE', 100); //longueur du champ dans la base de données
+define('L_CP', 5);
+define('LMAX_VILLE', 50);
+define('LMAX_PAYS', 50);
 /**
  *  Fonction affichant l'enseigne et le bloc entête avec le menu de navigation.
  *
@@ -260,5 +263,65 @@ function at_supprime_panier(){
     unset($_SESSION['panier']);
 }
 
+function at_button_ajouter_panier($id,$prix,$cles_facultatives = array()){
+    at_ajouter_article($id,1,$prix);
+    unset($_GET['action']);
+    if(isset($_SERVER['HTTP_REFERER'])){
+        header("Location: ".$_SERVER['HTTP_REFERER']);
+    }else{
+        $url=strtok($_SERVER['REQUEST_URI'],'?');
+        if(!empty($cles_facultatives)){
+            $url.='?';
+            $size=count($cles_facultatives);
+            foreach($cles_facultatives as $key){
+                if(isset($_GET[$key])){
+                    $url.=$key;
+                    $url.='=';
+                    $url.=$_GET[$key];
+                    $url.='&';
+                }
+            }
+            $url=mb_substr($url, 0, -1);
+        }
+        header("Location: ".$url);
+    }
+}
 
+function at_ajouter_wishlist($bd,$idl,$cles_facultatives = array()){
+    if(!at_est_authentifie()){
+        unset($_GET['action']);
+        header("Location: ./php/login.php");
+        return;
+    }
+    //Check for duplicate or non existant
+    $id_livre=at_bd_proteger_entree($bd,$idl);
+    $id_client=at_bd_proteger_entree($bd,$_SESSION['id']);
+    $sql="INSERT INTO listes (listIDClient,listIDLivre) SELECT $id_client,$id_livre
+    WHERE NOT EXISTS (SELECT * FROM listes WHERE listIDClient=$id_client AND listIDLivre=$id_livre)
+    AND EXISTS (SELECT * FROM livres WHERE liID=$id_livre)";
+    $res = mysqli_query($bd, $sql) or at_bd_erreur($bd,$sql);
+    $insert=(mysqli_num_rows($res)==0)?1:0;
+    mysqli_free_result($res);
+    unset($_GET['action']);
+    unset($_GET['id']);
+    if(isset($_SERVER['HTTP_REFERER'])){
+        header("Location: ".$_SERVER['HTTP_REFERER']);
+    }else{
+        $url=strtok($_SERVER['REQUEST_URI'],'?');
+        if(!empty($cles_facultatives)){
+            $url.='?';
+            $size=count($cles_facultatives);
+            foreach($cles_facultatives as $key){
+                if(isset($_GET[$key])){
+                    $url.=$key;
+                    $url.='=';
+                    $url.=$_GET[$key];
+                    $url.='&';
+                }
+            }
+            $url=mb_substr($url, 0, -1);
+        }
+        header("Location: ".$url);
+    }
+}
 ?>

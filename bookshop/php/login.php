@@ -22,11 +22,9 @@ $err = isset($_POST['btnConnect']) ? atl_traitement_connexion() : array();
 
 // si utilisateur déjà authentifié, on le redirige vers la page index.php
 if (at_est_authentifie()){
-    if(isset($_REQUEST["destination"])){
-        header("Location: {$_REQUEST["destination"]}");   
-    }else{
-        header('Location: ../index.php');
-    }
+    $page = isset($_POST['destination']) ? $_POST['destination'] : '../index.php';
+    header("Location: $page");
+    exit();
 }
 
 /*------------------------- Etape 2 --------------------------------------------
@@ -39,7 +37,7 @@ at_aff_enseigne_entete();
 
 atl_aff_contenu($err);
 
-at_aff_pied('../');
+at_aff_pied();
 
 at_aff_fin('main');
 
@@ -59,15 +57,11 @@ function atl_aff_contenu($err) {
         }
         echo '</p>';    
     }
-    if(isset($_SERVER['HTTP_REFERER'])){
-        $url=$_SERVER['HTTP_REFERER']; // ici ça casse tout sur validator
-    }else{
-        $url='../index.php';
-    }
+    
     echo    
         '<p>Pour vous connecter, merci de fournir les informations suivantes. </p>',
         '<form method="post" action="login.php">',
-            '<input type="hidden" name="destination" value="',$url,'">',
+            '<input type="hidden" name="destination" value="',isset($_SERVER['HTTP_REFERER'])?$_SERVER['HTTP_REFERER']:"../index.php",'"/>',
             '<table>';
     at_aff_ligne_input('Votre adresse email :', array('type' => 'email', 'name' => 'email', 'value' => $email, 'required' => false));
     at_aff_ligne_input('Choisissez un mot de passe :', array('type' => 'password', 'name' => 'passe', 'value' => '', 'required' => false));
@@ -129,7 +123,7 @@ function atl_traitement_connexion() {
         $passe = at_bd_proteger_entree($bd, $passe);
         $sql = "SELECT cliID,cliPassword FROM clients WHERE cliEmail = '$email'"; 
     
-        $res = mysqli_query($bd,$sql) or at_bd_erreur($bd,$sql);
+        $res = mysqli_query($bd,$sql) or at_bd_erreur($bd,$sql); 
         
         if (mysqli_num_rows($res) == 0) {
             $erreurs[] = 'Erreur dans les identifiants saisis.';

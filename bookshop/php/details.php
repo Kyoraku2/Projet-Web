@@ -132,49 +132,12 @@ function atl_aff_contenu($id,$erreurs){
 function atl_get_action($livre,$bd){
     //Ajout dans le panier
     if(at_creation_panier() && isset($_GET['action']) && $_GET['action']==="add"){
-        at_ajouter_article($livre['id'],1,$livre['prix']);
-        unset($_GET['action']);
-        if(isset($_SERVER['HTTP_REFERER'])){
-            header("Location: ".$_SERVER['HTTP_REFERER']); 
-        }else{
-            header("Location: details.php?article=".$livre['id']);
-        }
+        at_button_ajouter_panier($livre['id'],$livre['prix'],array('article'));
     }
 
     //Ajout dans la wishlist
     if(isset($_GET['action']) && $_GET['action']==="addW"){
-        if(!at_est_authentifie()){
-            unset($_GET['action']);
-            header("Location: ./login.php");
-            return;
-        }
-        //Check for duplicate
-        $id_livre=at_bd_proteger_entree($bd,$_GET['article']);
-        $id_client=at_bd_proteger_entree($bd,$_SESSION['id']);
-        $sql="SELECT listIDClient,listIDLivre
-        FROM listes
-        WHERE listIDClient=$id_client";
-        $res = mysqli_query($bd, $sql) or at_bd_erreur($bd,$sql);
-        $insert=true;
-
-        while (($t = mysqli_fetch_assoc($res))&&$insert){    
-            //duplicate (error messages here)
-            if($t['listIDLivre']===$id_livre){
-                $insert=false;
-            }
-        }
-        //insert
-        if($insert){
-            $sql =  "INSERT listes (listIDLivre,listIDClient)
-            VALUES ($id_livre,$id_client)";
-            $res = mysqli_query($bd, $sql) or at_bd_erreur($bd,$sql);
-        }
-        unset($_GET['action']);
-        if(isset($_SERVER['HTTP_REFERER'])){
-            header("Location: ".$_SERVER['HTTP_REFERER']);
-        }else{
-            header("Location: details.php?article=".$livre['id']);
-        }
+        at_ajouter_wishlist($bd,$livre['id'],array('article'));
     }
 }
 ?>

@@ -104,13 +104,22 @@ function atl_aff_contenu(){
     $i=0;
     foreach($all_commands as $c){
         $i++;
-        echo "<h2>Commande n°$i</h2>";
-        echo '<p>Passée le ',date('d/m/Y',strtotime($c['date'])),' à ',date('H\hi',strtotime($c['heure']));
-        echo '<br><br>Contenu de la commande :</p>';
+
+        echo 
+            '<div class="commands">',
+                '<div class="drop-down-commands">',
+                    '<input type="checkbox" class="activate" id="accordion-',$i,'" name="accordion-',$i,'">',
+                    '<label for="accordion-',$i,'" class="commands-title">Commande n°',$i,'</label>',
+                    '<div class="drop-down">',
+                        '<p>Passée le ',date('d/m/Y',strtotime($c['date'])),' à ',date('H\hi',strtotime($c['heure'])),
+                        '<br><br>Contenu de la commande :</p>';
         $size2=count($c);
         for($j=0;$j<$size2-2;$j++){
             atl_aff_livre($c[$j]);
         }
+        echo        '</div>',
+                '</div>',
+            '</div>';
     }
 }
 

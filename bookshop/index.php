@@ -134,13 +134,7 @@ function atl_get_action($all_books,$bd){
             }
         }
         if($id!==-1){
-            at_ajouter_article($_GET['id'],1,$all_books[$id]['prix']);
-            unset($_GET['action']);
-            if(isset($_SERVER['HTTP_REFERER'])){
-                header("Location: ".$_SERVER['HTTP_REFERER']);
-            }else{
-                header("Location: ".strtok($_SERVER['REQUEST_URI'],'?'));
-            }
+            at_button_ajouter_panier($_GET['id'],$all_books[$id]['prix']);
         }else{
             header("Location: ".strtok($_SERVER['REQUEST_URI'],'?'));
         }
@@ -148,40 +142,7 @@ function atl_get_action($all_books,$bd){
 
     //Add to wish
     if(isset($_GET['action']) && isset($_GET['id'])  && $_GET['action']==="addW" && at_est_entier($_GET['id'])){
-        if(!at_est_authentifie()){
-            unset($_GET['action']);
-            header("Location: ./php/login.php");
-            return;
-        }
-        //Check for duplicate or non existant
-        $id_livre=at_bd_proteger_entree($bd,$_GET['id']);
-        $id_client=at_bd_proteger_entree($bd,$_SESSION['id']);
-        $sql="SELECT liID
-        FROM livres
-        WHERE liID=$id_livre";
-        $res = mysqli_query($bd, $sql) or at_bd_erreur($bd,$sql);   
-        $leave=(mysqli_num_rows($res)==0)?1:0;
-        mysqli_free_result($res);
-
-        if($leave===0){
-            $sql="SELECT listIDClient,listIDLivre
-            FROM listes
-            WHERE listIDClient=$id_client
-            AND listIDLivre=$id_livre";
-            $res = mysqli_query($bd, $sql) or at_bd_erreur($bd,$sql);
-            $insert=(mysqli_num_rows($res)==0)?1:0;
-            mysqli_free_result($res);
-            //Insert
-            if($insert===1){
-                $sql =  "INSERT listes (listIDLivre,listIDClient)
-                VALUES ($id_livre,$id_client)";
-                $res = mysqli_query($bd, $sql) or at_bd_erreur($bd,$sql);
-            }
-            unset($_GET['action']);
-            unset($_GET['id']);
-            header("Location: ".$_SERVER['HTTP_REFERER']);
-        }
-        header("Location: ".strtok($_SERVER['REQUEST_URI'],'?'));
+        at_ajouter_wishlist($bd,$_GET['id']);
     }
 }
 
@@ -225,12 +186,19 @@ function atl_aff_section_livres($num, $tLivres) {
 
 //TODO :
 
-//Pagination
-//Historique commande
-//Requete SQL modification utilisateur
-//check parametre + autres verif si besoin
-//Vérification QueryString partout (avec les fonctions de merlet)
-//+gestion erreurs un peu sur toutes les pages
-//Check longueur max de champs de la BD
-//check les étapes de bd sur toutes les pages/toutes les requêtes: ouverture, recupération, libération, fermeture 
+/*** Important
+ - Ajout de page intermédiaires lors d'un ajout dans le panier/wishlist
+ - Redirection login/inscription cassé j'ai l'impression :
+ - Si on va depuis recherche dans login puis dans inscription, on est sensé
+ - être redirigé vers recherche au final 
+ - Pagination
+***/
+
+/*** Modification avant rendu 
+ - Optimiser un maximum les requêtes sql
+ - Faire la vérification de la queryString comme dans recherche ou details
+ sur toutes les pages, affichage des erreurs qui va avec (avec les fonctions de merlet)
+ - Vérification des longueurs max de champs de la BD (validation panier)
+ - Vérification des étapes de bd sur toutes les pages/toutes les requêtes: ouverture, recupération, libération, fermeture 
+***/
 ?>

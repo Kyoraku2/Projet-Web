@@ -476,6 +476,70 @@ input[type=submit], input[type=reset] {
     margin: 10px 20px;
 }
 
+/*** Affichage des commandes ***/
+.commands-title {
+    display:block;
+    padding: 10px 15px;
+}
+  
+.activate {
+    display: none;
+    position: absolute;
+    cursor: pointer;
+    width: 100%;
+    height: 40px;
+    margin: 0 0 0 -15px;
+    opacity: 0;
+}
+  
+/* Skin */
+
+.drop-down-commands {
+    background: white;
+    margin: 1em 1em;
+}
+
+.commands label{
+    font-weight: bold;
+    font-size: 18px;
+    border-bottom: 2px solid #FF9B37;
+}
+  
+.commands .drop-down-commands:hover {
+    background: #f1f1f1;
+}
+  
+  
+.commands .drop-down a:hover {
+    background: #f1f1f1;
+}
+  
+.commands :checked ~ .commands-title {
+    background: #f1f1f1;
+    font-weight: bold;
+    margin: 1em 0;
+    padding-left: 0.5em;
+    font-size: 18px;
+    border-bottom: 2px solid #FF9B37;
+}
+  
+.commands .drop-down {
+    max-height: 0;
+    overflow: hidden;
+}
+  
+.commands .activate:checked ~ .drop-down {
+    max-height: 20000px;
+}
+  
+.drop-down, .commands a, .drop-down-commands {
+    -webkit-transform: translateZ(0);  
+    -webkit-transition: all 0.3s;
+    -moz-transition: all 0.3s;
+    -o-transition: all 0.3s;
+    transition: all 0.3s;
+}
+
 /**********************************************************
                         Pied de page
 **********************************************************/

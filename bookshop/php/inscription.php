@@ -19,7 +19,8 @@ error_reporting(E_ALL); // toutes les erreurs sont capturées (utile lors de la 
 
 // si utilisateur déjà authentifié, on le redirige vers la page index.php
 if (at_est_authentifie()){
-    header('Location: ../index.php');
+    $page = isset($_POST['destination']) ? $_POST['destination'] : '../index.php';
+    header("Location: $page");
     exit();
 }
 
@@ -36,7 +37,7 @@ at_aff_enseigne_entete();
 
 atl_aff_contenu($err);
 
-at_aff_pied('../');
+at_aff_pied();
 
 at_aff_fin('main');
 
@@ -76,6 +77,7 @@ function atl_aff_contenu($err) {
     echo    
         '<p>Pour vous inscrire, merci de fournir les informations suivantes. </p>',
         '<form method="post" action="inscription.php">',
+        '<input type="hidden" name="destination" value="',$_SERVER['HTTP_REFERER'],'"/>',
             '<table>';
 
     at_aff_ligne_input('Votre adresse email :', array('type' => 'email', 'name' => 'email', 'value' => $email, 'required' => false));
