@@ -25,7 +25,7 @@ if($_GET){
         }
     }
 }else{
-    $erreurs[] = ' - L\'URL doit être de la forme "recherche.php?type=auteur&quoi=Moore".';
+    $erreurs[] = ' - L\'URL doit être de la forme "detail.php?article=id".';
 }
 
 atl_aff_contenu($id,$erreurs);
@@ -132,12 +132,12 @@ function atl_aff_contenu($id,$erreurs){
 function atl_get_action($livre,$bd){
     //Ajout dans le panier
     if(at_creation_panier() && isset($_GET['action']) && $_GET['action']==="add"){
-        at_button_ajouter_panier($livre['id'],$livre['prix'],array('article'));
+        at_button_ajouter_panier('./',$livre['id'],$livre['prix'],array('article'));
     }
 
     //Ajout dans la wishlist
     if(isset($_GET['action']) && $_GET['action']==="addW"){
-        at_ajouter_wishlist($bd,$livre['id'],array('article'));
+        at_ajouter_wishlist('./',$bd,$livre['id'],array('article'));
     }
 }
 ?>

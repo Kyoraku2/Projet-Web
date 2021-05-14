@@ -57,20 +57,20 @@ function atl_aff_contenu($err) {
         }
         echo '</p>';    
     }
-    
     echo    
         '<p>Pour vous connecter, merci de fournir les informations suivantes. </p>',
-        '<form method="post" action="login.php">',
-            '<input type="hidden" name="destination" value="',isset($_SERVER['HTTP_REFERER'])?$_SERVER['HTTP_REFERER']:"../index.php",'"/>',
+        '<form method="post" action="login.php">';
+        if(isset($_POST['destination'])){
+            $page=$_POST['destination'];
+        }else{
+            $page=isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : '../index.php';
+        }
+            echo '<input type="hidden" name="destination" value="',$page,'"/>',
             '<table>';
     at_aff_ligne_input('Votre adresse email :', array('type' => 'email', 'name' => 'email', 'value' => $email, 'required' => false));
     at_aff_ligne_input('Choisissez un mot de passe :', array('type' => 'password', 'name' => 'passe', 'value' => '', 'required' => false));
 
     echo 
-                '<tr>',
-                    '<td>Vous n\'êtes encore inscrit ?</td>',
-                    '<td><a href="./inscription.php">Inscrivez vous !</a></td>',
-                '</tr>',
                 '<tr>',
                     '<td colspan="2">',
                         '<input type="submit" name="btnConnect" value="Se connecter">',
@@ -78,14 +78,24 @@ function atl_aff_contenu($err) {
                     '</td>',
                 '</tr>',
             '</table>',
+        '</form>',
+        '<form method="post" action="inscription.php">',
+            '<input type="hidden" name="destination" value="',$page,'"/>',
+            '<table>',
+                '<tr>',
+                    '<td>Vous n\'êtes encore inscrit ?</td>',
+                    '<td><input type="submit" name="btnInscription" value="Inscrivez vous"></td>',
+                '</tr>',
+            '</table>',
         '</form>';
+        ;
 }
 
 function atl_traitement_connexion() {
     if( !at_parametres_controle('post', array('email','passe','btnConnect','destination'))) {
-        at_session_exit();   
+        at_session_exit();  
     }
-
+    
     $erreurs = array();
     
     // vérification du format de l'adresse email
@@ -140,7 +150,7 @@ function atl_traitement_connexion() {
                 mysqli_close($bd);
             }
             // libération des ressources 
-            mysqli_free_result($res);
+            //mysqli_free_result($res);
         }
         
     }

@@ -177,7 +177,8 @@ function atl_aff_livre($livre) {
     $auteurs = $livre['auteurs'];
     $livre = at_html_proteger_sortie($livre);
     echo 
-        '<article class="arCart">', 
+        '<article class="arRecherche">', 
+            '<a class="removeFromCart" href="',$_SERVER['REQUEST_URI'],'?action=delete&id=',$livre['id'],'" title="Retirer du panier"></a>',
             '<a href="details.php?article=', $livre['id'], '" title="Voir détails"><img src="../images/livres/', $livre['id'], '_mini.jpg" alt="', 
             $livre['titre'],'"></a>',
             '<h5>', $livre['titre'], '</h5>',
@@ -197,7 +198,6 @@ function atl_aff_livre($livre) {
             '<input name="id" type="hidden" value="',$livre['id'],'">',
             'Quantité : ',at_aff_liste_nombre("qte",0,100,1, at_qte_article($livre['id']),"onchange=this.form.submit()"),
             '</form>',
-            ' <a href="',$_SERVER['REQUEST_URI'],'?action=delete&id=',$livre['id'],'" title="Retirer du panier">Supprimer</a>',
             '<br>Prix total pour cet article : ',at_montant($livre['id']),' &euro;',
         '</article>';
 }

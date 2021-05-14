@@ -364,7 +364,7 @@ figure img {
     height: 160px;
     border: solid 1px #000;
 }
-figure:hover .addToCart, figure:hover .addToWishlist, article:hover .addToCart, article:hover .addToWishlist{
+figure:hover .addToCart, figure:hover .addToWishlist, figure:hover .removeFromCart, figure:hover .removeList, article:hover .addToCart, article:hover .addToWishlist, article:hover .removeFromCart, article:hover .removeFromList{
     visibility: visible;
 }
 .addToCart {
@@ -385,18 +385,32 @@ figure:hover .addToCart, figure:hover .addToWishlist, article:hover .addToCart, 
     height: 40px;
     background: url(../images/btnAddToWishlist.png) no-repeat;
 }
+
+.removeFromCart {
+    position: absolute;
+    visibility: hidden;
+    top: 30px;
+    right: 0px;
+    width: 40px;
+    height: 25px;
+    background: url(../images/btnSupprimer.png) no-repeat;
+}
+
+.removeFromList{
+    position: absolute;
+    visibility: hidden;
+    top: 65px;
+    right: 0px;
+    width: 40px;
+    height: 40px;
+    background: url(../images/btnSupprimer.png) no-repeat;
+}
+
 article.arRecherche {           /* utilisé dans recherche.php */
     position: relative;
     margin: 30px 10px 0 10px;	
     padding: 10px;
     border: solid 2px transparent;
-}
-
-article.arCart {           /* utilisé dans panier.php */
-    position: relative;
-    margin: 30px 10px 0 10px;	
-    padding: 10px;
-    border-top: solid 1px gray;
 }
 
 article.arCart:last-of-type{           /* utilisé dans panier.php */
@@ -472,6 +486,16 @@ input[type=submit], input[type=reset] {
     font-weight: bold;
     cursor: pointer;
 }
+
+input[name=btnInscription] {
+    background: none;
+    text-decoration: none;
+    color: #3c96f1;
+}
+input[name=btnInscription]:hover { 
+    text-decoration: underline;
+}
+
 .error{
     border: solid 2px #A00000;
     color: #A00000;

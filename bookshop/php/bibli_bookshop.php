@@ -263,34 +263,16 @@ function at_supprime_panier(){
     unset($_SESSION['panier']);
 }
 
-function at_button_ajouter_panier($id,$prix,$cles_facultatives = array()){
+function at_button_ajouter_panier($prefix='./',$id,$prix,$cles_facultatives = array()){
     at_ajouter_article($id,1,$prix);
     unset($_GET['action']);
-    if(isset($_SERVER['HTTP_REFERER'])){
-        header("Location: ".$_SERVER['HTTP_REFERER']);
-    }else{
-        $url=strtok($_SERVER['REQUEST_URI'],'?');
-        if(!empty($cles_facultatives)){
-            $url.='?';
-            $size=count($cles_facultatives);
-            foreach($cles_facultatives as $key){
-                if(isset($_GET[$key])){
-                    $url.=$key;
-                    $url.='=';
-                    $url.=$_GET[$key];
-                    $url.='&';
-                }
-            }
-            $url=mb_substr($url, 0, -1);
-        }
-        header("Location: ".$url);
-    }
+    at_redirections_after_add('cart',$prefix,$cles_facultatives,$id);
 }
 
-function at_ajouter_wishlist($bd,$idl,$cles_facultatives = array()){
+function at_ajouter_wishlist($prefix='./',$bd,$idl,$cles_facultatives = array()){
     if(!at_est_authentifie()){
         unset($_GET['action']);
-        header("Location: ./php/login.php");
+        header('Location: '.$prefix.'login.php');
         return;
     }
     //Check for duplicate or non existant
@@ -304,8 +286,15 @@ function at_ajouter_wishlist($bd,$idl,$cles_facultatives = array()){
     mysqli_free_result($res);
     unset($_GET['action']);
     unset($_GET['id']);
+    at_redirections_after_add('wishlist',$prefix,$cles_facultatives,$idl);
+}
+
+function at_redirections_after_add($type,$prefix,$cles_facultatives,$id){
     if(isset($_SERVER['HTTP_REFERER'])){
-        header("Location: ".$_SERVER['HTTP_REFERER']);
+        $_SESSION['tmpback']=$_SERVER['HTTP_REFERER'];
+        $_SESSION['tmpidlivre']=$id;
+        $_SESSION['tmptype']=$type;
+        header('Location: '.$prefix.'added.php');
     }else{
         $url=strtok($_SERVER['REQUEST_URI'],'?');
         if(!empty($cles_facultatives)){
@@ -321,7 +310,10 @@ function at_ajouter_wishlist($bd,$idl,$cles_facultatives = array()){
             }
             $url=mb_substr($url, 0, -1);
         }
-        header("Location: ".$url);
+        $_SESSION['tmpback']=$_SERVER['HTTP_REFERER'];
+        $_SESSION['tmpidlivre']=$id;
+        $_SESSION['tmptype']=$type;
+        header('Location: ',$prefix,'added.php');
     }
 }
 ?>

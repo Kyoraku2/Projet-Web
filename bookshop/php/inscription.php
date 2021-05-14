@@ -19,14 +19,17 @@ error_reporting(E_ALL); // toutes les erreurs sont capturées (utile lors de la 
 
 // si utilisateur déjà authentifié, on le redirige vers la page index.php
 if (at_est_authentifie()){
-    $page = isset($_POST['destination']) ? $_POST['destination'] : '../index.php';
+    if(isset($_POST['destination'])){
+        $page=$_POST['destination'];
+    }else{
+        $page=isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : '../index.php';
+    }
     header("Location: $page");
     exit();
 }
 
 // traitement si soumission du formulaire d'inscription
 $err = isset($_POST['btnSInscrire']) ? atl_traitement_inscription() : array(); 
-
 /*------------------------- Etape 2 --------------------------------------------
 - génération du code HTML de la page
 ------------------------------------------------------------------------------*/
@@ -53,7 +56,7 @@ ob_end_flush();
  * @global  array   $_POST
  */
 function atl_aff_contenu($err) {
-
+    print_r($_POST);
     $anneeCourante = (int) date('Y');
 
     // réaffichage des données soumises en cas d'erreur, sauf les mots de passe
@@ -76,8 +79,13 @@ function atl_aff_contenu($err) {
     
     echo    
         '<p>Pour vous inscrire, merci de fournir les informations suivantes. </p>',
-        '<form method="post" action="inscription.php">',
-        '<input type="hidden" name="destination" value="',$_SERVER['HTTP_REFERER'],'"/>',
+        '<form method="post" action="inscription.php">';
+        if(isset($_POST['destination'])){
+            $page=$_POST['destination'];
+        }else{
+            $page=isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : '../index.php';
+        }
+        echo '<input type="hidden" name="destination" value="',$page,'"/>',
             '<table>';
 
     at_aff_ligne_input('Votre adresse email :', array('type' => 'email', 'name' => 'email', 'value' => $email, 'required' => false));
@@ -118,7 +126,7 @@ function atl_aff_contenu($err) {
 function atl_traitement_inscription() {
 
     if( !at_parametres_controle('post', array('email', 'nomprenom', 'naissance_j', 'naissance_m', 'naissance_a', 
-                                              'passe1', 'passe2', 'btnSInscrire'))) {
+                                              'passe1', 'passe2', 'btnSInscrire'),array('btnInscription','destination'))) {
         at_session_exit();   
     }
     
@@ -250,7 +258,13 @@ function atl_traitement_inscription() {
     mysqli_close($bd);
     
     // redirection vers la page protegee.php
-    header('Location: protegee.php'); //TODO : à modifier dans le projet
+    //header('Location: protegee.php'); //TODO : à modifier dans le projet
+    if(isset($_POST['destination'])){
+        $page=$_POST['destination'];
+    }else{
+        $page=isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : '../index.php';
+    }
+    header("Location: $page");
     exit();
 }
     

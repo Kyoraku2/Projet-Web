@@ -16,7 +16,11 @@ error_reporting(E_ALL); // toutes les erreurs sont capturées (utile lors de la 
 /*------------------------- Etape 1 --------------------------------------------
 - vérifications diverses et traitement des soumissions
 ------------------------------------------------------------------------------*/
-
+if (!at_est_authentifie()){
+    $page = isset($_POST['destination']) ? $_POST['destination'] : '../index.php';
+    header("Location: $page");
+    exit();
+}
 /*------------------------- Etape 2 --------------------------------------------
 - génération du code HTML de la page
 ------------------------------------------------------------------------------*/
@@ -228,6 +232,8 @@ function atl_traitement_connexion($t,$bd) {
         if( !mb_ereg_match('^[0-9]*$', $codePostal)){
             $erreurs[] = 'Le code postal contient des caractères non autorisés';
         }
+    }else{
+        $erreurs[] = 'Le code postal doit être un nombre entier';
     }
 
     //Verif Pays

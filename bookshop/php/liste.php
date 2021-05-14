@@ -171,7 +171,7 @@ function atl_get_action($livres,$bd,$recherche){
             }
         }
         if($id!==-1){
-            at_button_ajouter_panier($_GET['id'],$livres[$id]['prix'],array('quoi'));
+            at_button_ajouter_panier('./',$_GET['id'],$livres[$id]['prix'],array('quoi'));
         }else{
             $url=strtok($_SERVER['REQUEST_URI'],'?').isset($$_GET["quoi"])?"?quoi=".urlencode($_GET['quoi']):"";
             header("Location: $url");
@@ -212,7 +212,7 @@ function atl_get_action($livres,$bd,$recherche){
 
     //add to my list
     if(isset($_GET['action']) && isset($_GET['id'])  && $_GET['action']==="addW" && at_est_entier($_GET['id'])){
-        at_ajouter_wishlist($bd,$_GET['id'],array('quoi'));
+        at_ajouter_wishlist('./',$bd,$_GET['id'],array('quoi'));
     }
 }
 
@@ -233,7 +233,8 @@ function atl_aff_livre($livre) {
                 echo '<a class="addToCart" href="',$_SERVER['REQUEST_URI'],'&action=add&id=',$livre['id'],'" title="Ajouter au panier"></a>',
                 '<a class="addToWishlist"  href="',$_SERVER['REQUEST_URI'],'&action=addW&id=',$livre['id'],'" title="Ajouter à la liste de cadeaux"></a>';
             }else{
-                echo '<a class="addToCart" href="',$_SERVER['REQUEST_URI'],'?action=add&id=',$livre['id'],'" title="Ajouter au panier"></a>';
+                echo '<a class="addToCart" href="',$_SERVER['REQUEST_URI'],'?action=add&id=',$livre['id'],'" title="Ajouter au panier"></a>',
+                '<a class="removeFromList" href="',$_SERVER['REQUEST_URI'],'?action=deleteW&id=',$livre['id'],'" title="Supprimer la liste"></a>';
             }
             echo '<a href="details.php?article=', $livre['id'], '" title="Voir détails"><img src="../images/livres/', $livre['id'], '_mini.jpg" alt="',
             $livre['titre'],'"></a>',
@@ -251,9 +252,6 @@ function atl_aff_livre($livre) {
             'Pages : ', $livre['pages'], '<br>',
             'ISBN13 : ', $livre['ISBN13'], 
             '<input name="id" type="hidden" value="',$livre['id'],'">';
-            if(!isset($_GET['quoi'])){
-                echo'<br><br><a href="'.$_SERVER['REQUEST_URI'],'?action=deleteW&id=',$livre['id'],'" title="Supprimer la liste">Supprimer de la liste</a>';
-            }
         echo '</article>';
 }
 

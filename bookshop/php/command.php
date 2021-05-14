@@ -103,7 +103,8 @@ function atl_aff_contenu(){
     $i=0;
     foreach($all_commands as $c){
         $i++;
-
+        $prix_total=0;
+        $prix_ligne=0;
         echo 
             '<div class="commands">',
                 '<div class="drop-down-commands">',
@@ -114,15 +115,18 @@ function atl_aff_contenu(){
                         '<br><br>Contenu de la commande :</p>';
         $size2=count($c);
         for($j=0;$j<$size2-2;$j++){
-            atl_aff_livre($c[$j]);
+            $prix_ligne=$c[$j]['prix']*$c[$j]['qte'];
+            $prix_total+=$prix_ligne;
+            atl_aff_livre($c[$j],$prix_ligne);
         }
-        echo        '</div>',
+        echo            '<p>Prix total de la commande : ',$prix_total,'</p>',
+                    '</div>',
                 '</div>',
             '</div>';
     }
 }
 
-function atl_aff_livre($livre) {
+function atl_aff_livre($livre,$prix_ligne) {
     // Le nom de l'auteur doit être encodé avec urlencode() avant d'être placé dans une URL, sans être passé auparavant par htmlentities()
     $auteurs = $livre['auteurs'];
     $livre = at_html_proteger_sortie($livre);
@@ -142,8 +146,9 @@ function atl_aff_livre($livre) {
     echo    '<br>Editeur : <a class="lienExterne" href="http://', trim($livre['edWeb']), '" target="_blank">', $livre['edNom'], '</a><br>',
             'Prix : ', $livre['prix'], ' &euro;<br>',
             'Pages : ', $livre['pages'], '<br>',
-            'ISBN13 : ', $livre['ISBN13'], '<br>',
-            'Quantité : ', $livre['qte'], 
+            'ISBN13 : ', $livre['ISBN13'], '<br><br>',
+            'Quantité : ', $livre['qte'], '<br>',
+            'Prix total pour cet article : ',$prix_ligne,'&euro;',
         '</article>';
 }
 

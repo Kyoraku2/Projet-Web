@@ -6,8 +6,6 @@ session_start();
 require_once './php/bibli_generale.php';
 require_once ('./php/bibli_bookshop.php');
 
-
-
 error_reporting(E_ALL); // toutes les erreurs sont capturées (utile lors de la phase de développement)
 
 at_aff_debut('BookShop | Bienvenue', './styles/bookshop.css', 'main');
@@ -29,7 +27,6 @@ ob_end_flush();
  *  Affichage du contenu de la page
  */
 function atl_aff_contenu() {
-    
     echo 
         '<h1>Bienvenue sur BookShop !</h1>',
         
@@ -134,7 +131,7 @@ function atl_get_action($all_books,$bd){
             }
         }
         if($id!==-1){
-            at_button_ajouter_panier($_GET['id'],$all_books[$id]['prix']);
+            at_button_ajouter_panier('./php/',$_GET['id'],$all_books[$id]['prix']);
         }else{
             header("Location: ".strtok($_SERVER['REQUEST_URI'],'?'));
         }
@@ -142,7 +139,7 @@ function atl_get_action($all_books,$bd){
 
     //Add to wish
     if(isset($_GET['action']) && isset($_GET['id'])  && $_GET['action']==="addW" && at_est_entier($_GET['id'])){
-        at_ajouter_wishlist($bd,$_GET['id']);
+        at_ajouter_wishlist('./php/',$bd,$_GET['id']);
     }
 }
 
@@ -187,16 +184,11 @@ function atl_aff_section_livres($num, $tLivres) {
 //TODO :
 
 /*** Important
- - Ajout de page intermédiaires lors d'un ajout dans le panier/wishlist
- - Redirection login/inscription cassé j'ai l'impression :
-   Si on va depuis recherche dans login puis dans inscription, on est sensé
-   être redirigé vers recherche au final 
+ Rien je crois
 ***/
 
 /*** Modification avant rendu 
  - Optimiser un maximum les requêtes sql
- - Faire la vérification de la queryString comme dans recherche ou details
- sur toutes les pages, affichage des erreurs qui va avec (avec les fonctions de merlet)
  - Vérification des longueurs max de champs de la BD (validation panier)
  - Vérification des étapes de bd sur toutes les pages/toutes les requêtes: ouverture, recupération, libération, fermeture 
 ***/
