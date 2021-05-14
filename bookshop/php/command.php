@@ -27,7 +27,8 @@ function atl_aff_contenu(){
         header("Refresh:5;url=./login.php");
         return;
     }
-    echo '<h1>Historique des commandes</h1>';
+    echo '<h1>Historique des commandes</h1>',
+    '<p>Pour retourner à votre page de compte, cliquez <a href="./compte.php" title="Compte">ici</a>.</p>';
     $bd = at_bd_connecter();
     $id=at_bd_proteger_entree($bd,$_SESSION['id']);
     $sql ="SELECT coID,coIDClient,coDate,coHeure,ccIDCommande,ccQuantite,liID, liTitre, liPrix, liPages, liISBN13, edNom, edWeb, auNom, auPrenom 

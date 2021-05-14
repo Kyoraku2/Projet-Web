@@ -24,6 +24,9 @@ if (at_est_authentifie()){
     }else{
         $page=isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : '../index.php';
     }
+    if(strcmp($page,'http://localhost'.$_SERVER['REQUEST_URI'])===0){
+        $page='../index.php';
+    }
     header("Location: $page");
     exit();
 }
@@ -56,7 +59,6 @@ ob_end_flush();
  * @global  array   $_POST
  */
 function atl_aff_contenu($err) {
-    print_r($_POST);
     $anneeCourante = (int) date('Y');
 
     // réaffichage des données soumises en cas d'erreur, sauf les mots de passe
@@ -84,6 +86,9 @@ function atl_aff_contenu($err) {
             $page=$_POST['destination'];
         }else{
             $page=isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : '../index.php';
+        }
+        if(strcmp($page,'http://localhost'.$_SERVER['REQUEST_URI'])===0){
+            $page='../index.php';
         }
         echo '<input type="hidden" name="destination" value="',$page,'"/>',
             '<table>';
@@ -263,6 +268,9 @@ function atl_traitement_inscription() {
         $page=$_POST['destination'];
     }else{
         $page=isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : '../index.php';
+    }
+    if(strcmp($page,'http://localhost'.$_SERVER['REQUEST_URI'])===0){
+        $page='../index.php';
     }
     header("Location: $page");
     exit();

@@ -43,7 +43,7 @@ if(!isset($_POST['modif'])){
 }
 
 
-at_aff_pied();
+at_aff_pied('../');
 
 at_aff_fin('main');
 
@@ -53,7 +53,8 @@ ob_end_flush();
 // ----------  Fonctions locales du script ----------- //
 
 function atl_aff_contenu($t){
-    echo '<h1>Compte Utilisateur</h1>';
+    echo '<h1>Compte Utilisateur</h1>',
+    '<p>Pour accéder à votre historique de commande(s), cliquez <a href="./command.php" title="Historique commandes">ici</a>.</p>';
     echo '<form method="post" action="compte.php">',
         '<table>';
         atl_aff_ligne("Email",$t['cliEmail']);
