@@ -16,7 +16,7 @@ error_reporting(E_ALL); // toutes les erreurs sont capturées (utile lors de la 
 /*------------------------- Etape 1 --------------------------------------------
 - vérifications diverses et traitement des soumissions
 ------------------------------------------------------------------------------*/
-
+echo '<pre>',print_r($_POST),'</pre>';
 // si utilisateur déjà authentifié, on le redirige vers la page index.php
 if (at_est_authentifie()){
     if(isset($_POST['destination'])){

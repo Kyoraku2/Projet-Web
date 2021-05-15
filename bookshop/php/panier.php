@@ -89,6 +89,9 @@ function atl_aff_contenu(){
         echo '<p><a href="',$_SERVER['REQUEST_URI'],'?action=validate" title="Valider le panier">Valider le panier</a></p>';
         atl_panier_action($bd);
         mysqli_close($bd);
+        if(isset($_GET['action'])){
+            header('Location: ./panier.php');
+        }
     }
 }
 

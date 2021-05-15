@@ -7,7 +7,7 @@ require_once '../php/bibli_generale.php';
 require_once '../php/bibli_bookshop.php';
 
 error_reporting(E_ALL);
-if(!isset($_SERVER['HTTP_REFERER']) || !isset($_SESSION['tmpidlivre']) || !isset($_SESSION['tmptype']) || !isset($_SESSION['tmpback'])){
+if(!isset($_SESSION['tmpidlivre']) || !isset($_SESSION['tmptype']) || !isset($_SESSION['tmpback'])){
     header('Location: ../index.php');
     exit();
 }
@@ -27,8 +27,6 @@ ob_end_flush();
 
 
 function atl_aff_contenu(){
-    echo '<h1>Validation d\'ajout</h1>',
-    '<p>L\'article suivant à bien été ajouté à votre ',($_SESSION['tmptype']==='cart')?'panier':'liste de souhait(s)',' :</p>';
     // ouverture de la connexion, requête
     $bd = at_bd_connecter();
     $id=at_bd_proteger_entree($bd,$_SESSION['tmpidlivre']);
@@ -39,7 +37,14 @@ function atl_aff_contenu(){
             WHERE liID=$id";
 
     $res = mysqli_query($bd, $sql) or at_bd_erreur($bd,$sql);
-
+    if(mysqli_num_rows($res)===0){
+        $tmp=$_SESSION['tmpback'];
+        unset($_SESSION['tmpback']);
+        unset($_SESSION['tmpidlivre']);
+        unset($_SESSION['tmptype']);
+        header('Location: '.$tmp);
+        exit();
+    }
     $lastID = -1;
     while ($t = mysqli_fetch_assoc($res)) {
         if ($t['liID'] != $lastID) {
@@ -60,8 +65,15 @@ function atl_aff_contenu(){
     // libération des ressources
     mysqli_free_result($res);
     mysqli_close($bd);
+
+    echo '<h1>Validation d\'ajout</h1>',
+    '<p>L\'article suivant à bien été ajouté à votre ',($_SESSION['tmptype']==='cart')?'panier':'liste de souhait(s)',' :</p>';
     if ($lastID === -1) {
         echo '<p>Aucun livre trouvé</p>';
+        unset($_SESSION['tmpback']);
+        unset($_SESSION['tmpidlivre']);
+        unset($_SESSION['tmptype']);
+        return;
     }
     atl_aff_livre($livre);
     echo '<p><a href="',$_SESSION['tmpback'],'" title="Retour à la page précédente">Retourner à la page précédente</a>',

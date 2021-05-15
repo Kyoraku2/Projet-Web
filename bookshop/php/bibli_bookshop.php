@@ -263,13 +263,13 @@ function at_supprime_panier(){
     unset($_SESSION['panier']);
 }
 
-function at_button_ajouter_panier($prefix='./',$id,$prix,$cles_facultatives = array()){
+function at_button_ajouter_panier($id,$prix,$prefix='./',$cles_facultatives = array()){
     at_ajouter_article($id,1,$prix);
     unset($_GET['action']);
     at_redirections_after_add('cart',$prefix,$cles_facultatives,$id);
 }
 
-function at_ajouter_wishlist($prefix='./',$bd,$idl,$cles_facultatives = array()){
+function at_ajouter_wishlist($bd,$idl,$prefix='./',$cles_facultatives = array()){
     if(!at_est_authentifie()){
         unset($_GET['action']);
         header('Location: '.$prefix.'login.php');
@@ -285,7 +285,6 @@ function at_ajouter_wishlist($prefix='./',$bd,$idl,$cles_facultatives = array())
     $insert=(mysqli_num_rows($res)==0)?1:0;
     mysqli_free_result($res);
     unset($_GET['action']);
-    unset($_GET['id']);
     at_redirections_after_add('wishlist',$prefix,$cles_facultatives,$idl);
 }
 
@@ -299,7 +298,6 @@ function at_redirections_after_add($type,$prefix,$cles_facultatives,$id){
         $url=strtok($_SERVER['REQUEST_URI'],'?');
         if(!empty($cles_facultatives)){
             $url.='?';
-            $size=count($cles_facultatives);
             foreach($cles_facultatives as $key){
                 if(isset($_GET[$key])){
                     $url.=$key;
@@ -310,10 +308,10 @@ function at_redirections_after_add($type,$prefix,$cles_facultatives,$id){
             }
             $url=mb_substr($url, 0, -1);
         }
-        $_SESSION['tmpback']=$_SERVER['HTTP_REFERER'];
+        $_SESSION['tmpback']=$url;
         $_SESSION['tmpidlivre']=$id;
         $_SESSION['tmptype']=$type;
-        header('Location: ',$prefix,'added.php');
+        header('Location: '.$prefix.'added.php');
     }
 }
 ?>

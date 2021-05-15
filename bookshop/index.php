@@ -131,7 +131,7 @@ function atl_get_action($all_books,$bd){
             }
         }
         if($id!==-1){
-            at_button_ajouter_panier('./php/',$_GET['id'],$all_books[$id]['prix']);
+            at_button_ajouter_panier($_GET['id'],$all_books[$id]['prix'],'./php/');
         }else{
             header("Location: ".strtok($_SERVER['REQUEST_URI'],'?'));
         }
@@ -139,7 +139,7 @@ function atl_get_action($all_books,$bd){
 
     //Add to wish
     if(isset($_GET['action']) && isset($_GET['id'])  && $_GET['action']==="addW" && at_est_entier($_GET['id'])){
-        at_ajouter_wishlist('./php/',$bd,$_GET['id']);
+        at_ajouter_wishlist($bd,$_GET['id'],'./php/');
     }
 }
 
@@ -188,8 +188,7 @@ function atl_aff_section_livres($num, $tLivres) {
 ***/
 
 /*** Modification avant rendu 
- - Optimiser un maximum les requêtes sql
- - Vérification des longueurs max de champs de la BD (validation panier)
+ - Optimiser un maximum les requêtes sql (panier et listes)
  - Vérification des étapes de bd sur toutes les pages/toutes les requêtes: ouverture, recupération, libération, fermeture 
 ***/
 ?>

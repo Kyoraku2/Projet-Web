@@ -200,7 +200,7 @@ function atl_get_action($livres,$bd,$recherche){
         }
         
         if($id!==-1){
-            at_button_ajouter_panier('./',$_GET['id'],$livres[$id]['prix'],array('quoi','type'));
+            at_button_ajouter_panier($_GET['id'],$livres[$id]['prix'],'./',array('quoi','type'));
         }else{
             $url=strtok($_SERVER['REQUEST_URI'],'?');
             $url.=isset($recherche['type'])?"?type=".$recherche['type']."&quoi=".$recherche['quoi']:"";
@@ -211,7 +211,7 @@ function atl_get_action($livres,$bd,$recherche){
 
     //Add to wish
     if(isset($_GET['action']) && isset($_GET['id'])  && $_GET['action']==="addW" && at_est_entier($_GET['id'])){
-        at_ajouter_wishlist('./',$bd,$_GET['id'],array('quoi','type'));
+        at_ajouter_wishlist($bd,$_GET['id'],'./',array('quoi','type'));
     }
 }
 

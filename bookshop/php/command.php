@@ -50,6 +50,7 @@ function atl_aff_contenu(){
     $all_commands=array();
     $lastBookID = -1;
     $lastCmdID = -1;
+    $i=0;
     while ($t = mysqli_fetch_assoc($res)) {
         if($t['coID'] != $lastCmdID){
             if ($lastCmdID != -1) {
@@ -60,9 +61,29 @@ function atl_aff_contenu(){
         }
     }
     if($lastCmdID != -1){
-        $all_commands[]=$cmd; 
+        $all_commands[$lastCmdID]=$cmd; 
     }
-
+/*
+    while ($t = mysqli_fetch_assoc($res)) {
+        if ($t['liID'] != $lastID) {
+            if ($lastID != -1) {
+                $livres[]=$livre;
+            }
+            $lastID = $t['liID'];
+            $livre = array( 'id' => $t['liID'], 
+            'titre' => $t['liTitre'],
+            'edNom' => $t['edNom'],
+            'edWeb' => $t['edWeb'],
+            'pages' => $t['liPages'],
+            'ISBN13' => $t['liISBN13'],
+            'prix' => $t['liPrix'],
+            'auteurs' => array(array('prenom' => $t['auPrenom'], 'nom' => $t['auNom']))
+            );
+        }else{
+            $livre['auteurs'][] = array('prenom' => $t['auPrenom'], 'nom' => $t['auNom']);
+        }
+    }
+    */
     mysqli_data_seek($res,0);
 
     $lastCmdID=-1;
@@ -120,7 +141,7 @@ function atl_aff_contenu(){
             $prix_total+=$prix_ligne;
             atl_aff_livre($c[$j],$prix_ligne);
         }
-        echo            '<p>Prix total de la commande : ',$prix_total,'</p>',
+        echo            '<p>Prix total de la commande : ',$prix_total,'&euro;</p>',
                     '</div>',
                 '</div>',
             '</div>';
@@ -150,7 +171,7 @@ function atl_aff_livre($livre,$prix_ligne) {
             'ISBN13 : ', $livre['ISBN13'], '<br><br>',
             'Quantité : ', $livre['qte'], '<br>',
             'Prix total pour cet article : ',$prix_ligne,'&euro;',
-        '</article>';
+        '</article><br>';
 }
 
 //redirection y'a un pb
