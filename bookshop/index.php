@@ -188,6 +188,9 @@ function atl_aff_section_livres($num, $tLivres) {
 ***/
 
 /*** Modification avant rendu 
+ - urlencode pour url?cle=urlencore(blabla)
+ - http://www.site.com/forum.php?id=<script>...</script>
+ - exit après chaque header
  - Optimiser un maximum les requêtes sql (panier et listes)
  - Vérification des étapes de bd sur toutes les pages/toutes les requêtes: ouverture, recupération, libération, fermeture 
 ***/
