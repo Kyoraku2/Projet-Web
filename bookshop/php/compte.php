@@ -27,9 +27,14 @@ if (!at_est_authentifie()){
 
 $bd = at_bd_connecter();
 
-    $sql = "SELECT cliEmail,cliNomPrenom,cliPassword,cliAdresse,cliVille,cliCP,cliPays FROM clients WHERE cliID=".$_SESSION['id'];
+    $sql = "SELECT cliID,cliEmail,cliNomPrenom,cliPassword,cliAdresse,cliVille,cliCP,cliPays FROM clients";
     $res = mysqli_query($bd, $sql) or at_bd_erreur($bd, $sql);
     $t = mysqli_fetch_assoc($res);
+    while($t['cliID']!=$_SESSION['id']){
+        $t = mysqli_fetch_assoc($res);
+    }
+    
+    
 
 at_aff_debut('BookShop | Inscription', '../styles/bookshop.css', 'main');
 
@@ -38,7 +43,7 @@ at_aff_enseigne_entete();
 if(!isset($_POST['modif'])){
     atl_aff_contenu($t);
 }else{
-    $err = (isset($_POST['currpass'])) ? atl_traitement_connexion($t,$bd) : array();
+    $err = (isset($_POST['currpass'])) ? atl_traitement_connexion($t,$bd,$res) : array();
     atl_aff_contenu2($t,$err);
 }
 
@@ -65,7 +70,7 @@ function atl_aff_contenu($t){
         atl_aff_ligne("Code Postal",$t['cliCP']);
         atl_aff_ligne("Pays",$t['cliPays']);
     echo '<tr>',
-    '<td colspan="2"><input type="submit" name="modif" value="Modifier les informations" style="width:175px;background-size: 175px 26px"></td>',
+    '<td colspan="2"><input type="submit" name="modif" value="Modifier les informations" style="width:200px;background-size: 200px 26px"></td>',
     '</tr>',
     '</table>',
     '</form>';
@@ -120,7 +125,7 @@ function atl_aff_ligne($nom,$valeur){
     "<td>$valeur</td>";
 }
 
-function atl_traitement_connexion($t,$bd) {
+function atl_traitement_connexion($t,$bd,$res) {
 
     if( !at_parametres_controle('post', array('email', 'nomprenom', 'newpass','currpass','adresse',
                                                 'ville','pays','codePostal','modif'))) {
@@ -234,7 +239,9 @@ function atl_traitement_connexion($t,$bd) {
             $erreurs[] = 'Le code postal contient des caractères non autorisés';
         }
     }else{
-        $erreurs[] = 'Le code postal doit être un nombre entier';
+        if($codePostal !== '0'){
+            $erreurs[] = 'Le code postal doit être un nombre entier';
+        }
     }
 
     //Verif Pays
@@ -263,22 +270,20 @@ function atl_traitement_connexion($t,$bd) {
 
         // pas utile, car l'adresse a déjà été vérifiée, mais tellement plus sécurisant...
         $email = at_bd_proteger_entree($bd, $email);
-        $sql = "SELECT cliId FROM clients WHERE cliEmail = '$email' AND cliId != $id"; 
-    
-        $res = mysqli_query($bd,$sql) or at_bd_erreur($bd,$sql);
-        
-        if (mysqli_num_rows($res) != 0) {
-            $erreurs[] = 'L\'adresse email spécifiée existe déjà.';
-            // libération des ressources 
-            mysqli_free_result($res);
-            mysqli_close($bd);
+        mysqli_data_seek($t,0);
+        while($t = mysqli_fetch_assoc($res)){
+            if($t['cliID'] != $_SESSION['id'] && $t['cliEmail'] == $email){
+                $erreurs[] = 'L\'adresse email spécifiée existe déjà.';
+            }
         }
-        else{
-            // libération des ressources 
-            mysqli_free_result($res);
-        }
-        
+        // libération des ressources 
+        mysqli_free_result($res);
     }
+    else{
+        // libération des ressources 
+        mysqli_free_result($res);
+    }
+        
     
     // s'il y a des erreurs ==> on retourne le tableau d'erreurs    
     if (count($erreurs) > 0) {  
@@ -301,6 +306,7 @@ function atl_traitement_connexion($t,$bd) {
     $codePostal = at_bd_proteger_entree($bd,$codePostal);
 
     $pays = at_bd_proteger_entree($bd,$pays);
+
 
 
     
