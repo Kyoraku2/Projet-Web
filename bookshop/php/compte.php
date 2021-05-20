@@ -335,5 +335,4 @@ function atl_traitement_connexion($t,$bd,$res) {
     exit();
 }
 
-
 ?>

@@ -81,12 +81,12 @@ function atl_aff_contenu(){
         }
 
         //Montant total
-        echo '<h3>Prix total de la commande : ',at_montant_global(),' &euro;</h3>';
+        echo '<hr>','<h3>Prix total de la commande : ',at_montant_global(),' &euro;</h3>';
 
         //Reset le panier
-        echo '<p><a href="',$_SERVER['REQUEST_URI'],'?action=reset" title="Vider le panier">Réinitialiser le panier</a></p>';
+        echo '<div class=valide_empty_parent><div class=valide_empty><p><a href="',$_SERVER['REQUEST_URI'],'?action=reset" title="Vider le panier">Vider</a></p></div>';
         //Valider le panier
-        echo '<p><a href="',$_SERVER['REQUEST_URI'],'?action=validate" title="Valider le panier">Valider le panier</a></p>';
+        echo '<div class=valide_empty><p><a href="',$_SERVER['REQUEST_URI'],'?action=validate" title="Valider le panier">Valider</a></p></div></div>';
         atl_panier_action($bd);
         mysqli_close($bd);
     }
@@ -155,13 +155,12 @@ function atl_aff_livre($livre) {
             
     echo    '<br>Editeur : <a class="lienExterne" href="http://', trim($livre['edWeb']), '" target="_blank">', $livre['edNom'], '</a><br>',
             'Prix : ', $livre['prix'], ' &euro;<br>',
-            '<br><br><br>',
             '<form name="order" action="panier.php" method="get" style="display: inline-block;">',
             '<input name="action" type="hidden" value="change">',
             '<input name="id" type="hidden" value="',$livre['id'],'">',
             'Quantité : ',at_aff_liste_nombre("qte",0,100,1, at_qte_article($livre['id']),"onchange=this.form.submit()"),
             '</form>',
-            '<br>Prix total pour cet article : ',at_montant($livre['id']),' &euro;',
+            '<br><h5>Prix total pour cet article : ',at_montant($livre['id']),' &euro;</h5>',
         '</article>';
 }
 

@@ -157,31 +157,34 @@ function atl_aff_contenu($recherche, $erreurs) {
         }
 
         $totalBooks=count($livres);
-        if($position>$totalBooks){
-            $position=0;
-        }
-        if($position%$pagination!==0){
-            $position-=$position%$pagination;
+        if($totalBooks!=0){
+            if($position>$totalBooks){
+                $position=0;
+            }
+            if($position%$pagination!==0){
+                $position-=$position%$pagination;
+            }
+            
+            for($i=$position;$i<$position+$pagination;$i++){
+                if($i>=$totalBooks){
+                    break;
+                }
+                atl_aff_livre($livres[$i]);
+            }
+            echo '<p class="pagination">Pages : ';
+            for ($i = 0, $nb = 0; $i < $totalBooks; $i += $pagination) {
+                $nb ++;
+                if ($i == $position) {  // page en cours, pas de lien
+                    echo "$nb ";
+                } else {
+                    echo '<a href="', $_SERVER['PHP_SELF'],
+                        '?type=',$recherche['type'],'&quoi=',$recherche['quoi'],'&p=', $i, '">', 
+                        $nb, '</a> ';
+                }
+            }
+            echo '</p>';
         }
         
-        for($i=$position;$i<$position+$pagination;$i++){
-            if($i>=$totalBooks){
-                break;
-            }
-            atl_aff_livre($livres[$i]);
-        }
-        echo '<p class="pagination">Pages : ';
-        for ($i = 0, $nb = 0; $i < $totalBooks; $i += $pagination) {
-            $nb ++;
-            if ($i == $position) {  // page en cours, pas de lien
-                echo "$nb ";
-            } else {
-                echo '<a href="', $_SERVER['PHP_SELF'],
-                    '?type=',$recherche['type'],'&quoi=',$recherche['quoi'],'&p=', $i, '">', 
-                    $nb, '</a> ';
-            }
-        }
-        echo '</p>';
         atl_get_action($livres,$bd,$recherche);
         mysqli_close($bd);
     }

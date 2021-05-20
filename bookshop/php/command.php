@@ -107,15 +107,15 @@ function atl_aff_contenu(){
                     '<input type="checkbox" class="activate" id="accordion-',$i,'" name="accordion-',$i,'">',
                     '<label for="accordion-',$i,'" class="commands-title">Commande n°',$i,'</label>',
                     '<div class="drop-down">',
-                        '<p>Passée le ',date('d/m/Y',strtotime($c['date'])),' à ',date('H\hi',strtotime($c['heure'])),
-                        '<br><br>Contenu de la commande :</p>';
+                        '<h3>Passée le ',date('d/m/Y',strtotime($c['date'])),' à ',date('H\hi',strtotime($c['heure'])),
+                        '<br><br>Contenu de la commande :</h3>';
         $size2=count($c);
         for($j=0;$j<$size2-2;$j++){
             $prix_ligne=$c[$j]['prix']*$c[$j]['qte'];
             $prix_total+=$prix_ligne;
             atl_aff_livre($c[$j],$prix_ligne);
         }
-        echo            '<p>Prix total de la commande : ',$prix_total,'&euro;</p>',
+        echo            '<h3>Prix total de la commande : ',$prix_total,'&euro;</h3>',
                     '</div>',
                 '</div>',
             '</div>';
@@ -127,7 +127,7 @@ function atl_aff_livre($livre,$prix_ligne) {
     $auteurs = $livre['auteurs'];
     $livre = at_html_proteger_sortie($livre);
     echo 
-        '<article class="arCart" style="border: none;">', 
+        '<article class="arHist" style="border: none;">', 
             '<a href="details.php?article=', $livre['id'], '" title="Voir détails"><img src="../images/livres/', $livre['id'], '_mini.jpg" alt="', 
             $livre['titre'],'"></a>',
             '<h5>', $livre['titre'], '</h5>',
@@ -142,9 +142,9 @@ function atl_aff_livre($livre,$prix_ligne) {
     echo    '<br>Editeur : <a class="lienExterne" href="http://', trim($livre['edWeb']), '" target="_blank">', $livre['edNom'], '</a><br>',
             'Prix : ', $livre['prix'], ' &euro;<br>',
             'Pages : ', $livre['pages'], '<br>',
-            'ISBN13 : ', $livre['ISBN13'], '<br><br>',
+            'ISBN13 : ', $livre['ISBN13'], '<br>',
             'Quantité : ', $livre['qte'], '<br>',
-            'Prix total pour cet article : ',$prix_ligne,'&euro;',
+            '<h5 style="margin-left:10px;">Prix total pour cet article : ',$prix_ligne,'&euro;</h5>',
         '</article><br>';
 }
 

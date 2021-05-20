@@ -406,6 +406,13 @@ figure:hover .addToCart, figure:hover .addToWishlist, figure:hover .removeFromCa
     background: url(../images/btnSupprimer.png) no-repeat;
 }
 
+article.arHist img{
+    float: left; 
+    margin: 0 10px 10px 10px; 
+    border: solid 1px #000; 
+    height: 100px; 
+}
+
 article.arRecherche {           /* utilisé dans recherche.php */
     position: relative;
     margin: 30px 10px 0 10px;	
@@ -413,19 +420,8 @@ article.arRecherche {           /* utilisé dans recherche.php */
     border: solid 2px transparent;
 }
 
-article.arCart:last-of-type{           /* utilisé dans panier.php */
-    border-bottom: solid 1px gray;
-}
-
-article.arCart img{
-    float: left; 
-    margin: 0 10px 10px 0; 
-    border: solid 1px #000; 
-    height: 100px; 
-}
-
 article.arRecherche:hover {
-    border-color: #00A000; 
+    border-color: #FF9B37; 
     background: #FFFFE0;
 }
 article.arRecherche img{
@@ -440,6 +436,29 @@ article.arRecherche .addToCart, article.arRecherche .addToWishlist{
 
 .pagination{
     text-align: center;
+}
+
+hr{
+    margin: 1em 5em 1em 5em;
+    border: 1px dashed #FF9B37;
+}
+
+.valide_empty{
+    margin: auto;
+    background: transparent url(../images/bouton.png) no-repeat;
+    height: 26px;
+    width: 102px;
+    text-align: center;
+    color: #FFF;
+    border: none;	
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.valide_empty a{
+    vertical-align: middle;
+    text-decoration: none;
+    color: #FFF;
 }
 
 /**********************************************************
