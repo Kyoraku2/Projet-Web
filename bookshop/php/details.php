@@ -46,7 +46,8 @@ function atl_aff_livre($livre) {
     // Le nom de l'auteur doit être encodé avec urlencode() avant d'être placé dans une URL, sans être passé auparavant par htmlentities()
     $auteurs = $livre['auteurs'];
     $livre = at_html_proteger_sortie($livre);
-    echo '<article class="arRecherche">', 
+    echo '<h2>Informations</h2>',
+    '<article class="arRecherche">', 
     '<a class="addToCart" href="',$_SERVER['REQUEST_URI'],'&amp;action=add" title="Ajouter au panier"></a>',
     '<a class="addToWishlist"  href="',$_SERVER['REQUEST_URI'],'&amp;action=addW" title="Ajouter à la liste de cadeaux"></a>',
     '<a href="details.php?article=', $livre['id'], '" title="Voir détails"><img src="../images/livres/', $livre['id'], '_mini.jpg" alt="', 
@@ -64,7 +65,8 @@ function atl_aff_livre($livre) {
             'Pages : ', $livre['pages'], '<br>',
             'ISBN13 : ', $livre['ISBN13'], '<br>',
             '</article>','<br>',
-            '<p>Resume : <em>',(!empty($livre['resume']))?$livre['resume']:"Résumé à venir",'</em></p>';
+            '<h2>Résumé</h2>',
+            '<p><em>',(!empty($livre['resume']))?$livre['resume']:"Résumé à venir",'</em></p>';
 }
 
 function atl_aff_contenu($id,$erreurs){

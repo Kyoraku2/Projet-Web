@@ -81,7 +81,7 @@ function atl_aff_contenu(){
         }
 
         //Montant total
-        echo '<p>Prix total de la commande :',at_montant_global(),' &euro;</p>';
+        echo '<h3>Prix total de la commande : ',at_montant_global(),' &euro;</h3>';
 
         //Reset le panier
         echo '<p><a href="',$_SERVER['REQUEST_URI'],'?action=reset" title="Vider le panier">Réinitialiser le panier</a></p>';
