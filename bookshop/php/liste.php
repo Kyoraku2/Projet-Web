@@ -61,12 +61,7 @@ function atl_aff_contenu($recherche,$erreurs){
         Vous allez être redirigé vers la page de connexion dans 5 secondes</h3>',
         '<p>Cliquez <a href="login.php" title="Connexion">ici</a> si la redirection vers la page de connexion ne fonctionne pas</p>';
         header("Refresh:5;url=./login.php");
-        return;
-    }
-    $id=0;
-    if(!isset($_SESSION['id'])){
-        echo '<p>Erreur, veuillez contacter l\'administrateur du site.</p>';
-        return;
+        exit();
     }
     // ouverture de la connexion, requête
     $bd = at_bd_connecter();
@@ -175,7 +170,7 @@ function atl_get_action($livres,$bd,$recherche){
         }else{
             $url=strtok($_SERVER['REQUEST_URI'],'?').isset($$_GET["quoi"])?"?quoi=".urlencode($_GET['quoi']):"";
             header("Location: $url");
-            echo"wsh";
+            exit();
         }
     }
 
@@ -187,12 +182,12 @@ function atl_get_action($livres,$bd,$recherche){
         WHERE listIDClient=$id_client
         AND listIDLivre=$id_livre";
         $res = mysqli_query($bd, $sql) or at_bd_erreur($bd,$sql);
-        unset($_GET['action']);
-        unset($_GET['id']);
         if(isset($_SERVER['HTTP_REFERER'])){
             header("Location: ".$_SERVER['HTTP_REFERER']);
+            exit();
         }else{
             header("Location: liste.php");
+            exit();
         }
     }
 
@@ -202,11 +197,12 @@ function atl_get_action($livres,$bd,$recherche){
         $sql="DELETE FROM listes
         WHERE listIDClient=$id_client";
         $res = mysqli_query($bd, $sql) or at_bd_erreur($bd,$sql);
-        unset($_GET['action']);
         if(isset($_SERVER['HTTP_REFERER'])){
             header("Location: ".$_SERVER['HTTP_REFERER']);
+            exit();
         }else{
             header("Location: liste.php");
+            exit();
         }
     }
 
@@ -254,8 +250,4 @@ function atl_aff_livre($livre) {
             '<input name="id" type="hidden" value="',$livre['id'],'">';
         echo '</article>';
 }
-
-//Vérifier paramètre
-//Manque le résultat de la recherche
-//Verif genre id=498894 
 ?>

@@ -2,14 +2,16 @@
 
 ob_start(); //démarre la bufferisation
 session_start();
-date_default_timezone_set('Europe/Paris');
-
 require_once '../php/bibli_generale.php';
 require_once ('../php/bibli_bookshop.php');
 
-error_reporting(E_ALL); // toutes les erreurs sont capturées (utile lors de la phase de développement)
+error_reporting(E_ALL);
+/*if(!isset($_SESSION['HTTP_REFERER']) || !at_est_authentifie()){
+    header('Location: ../index.php');
+    exit();
+}*/
 
-at_aff_debut('BookShop | Panier', '../styles/bookshop.css', 'main');
+at_aff_debut('BookShop | Validation Panier', '../styles/bookshop.css', 'main');
 
 at_aff_enseigne_entete();
 
@@ -19,19 +21,19 @@ at_aff_pied('../');
 
 at_aff_fin('main');
 
+// fin du script --> envoi de la page 
+
 ob_end_flush();
 
 function atl_aff_contenu(){
+    echo '<h1>Merci pour votre achat !</h1>',
+        '<h2>Récapitulatif</h2>';
+
     if(at_creation_panier()){
-        $nb_articles=at_compter_articles();
-        if($nb_articles==0){
-            echo '<h3>Votre panier est vide</h3>';
-            return;
+        if(at_compter_articles()==0){
+            header('Location: ../index.php');
+            exit();
         }
-        echo '<h3>Voici votre panier',
-        (at_est_authentifie())?"":" , connectez vous pour le valider",
-        ' (',$nb_articles,' article',($nb_articles>1)?"s)":")",
-        '</h3>';
         // ouverture de la connexion, requête
         $bd = at_bd_connecter();
     
@@ -77,61 +79,10 @@ function atl_aff_contenu(){
             mysqli_free_result($res);
         }else{
             mysqli_free_result($res);
-            mysqli_close($bd);
         }
-
-        //Montant total
-        echo '<p>Prix total de la commande :',at_montant_global(),' &euro;</p>';
-
-        //Reset le panier
-        echo '<p><a href="',$_SERVER['REQUEST_URI'],'?action=reset" title="Vider le panier">Réinitialiser le panier</a></p>';
-        //Valider le panier
-        echo '<p><a href="',$_SERVER['REQUEST_URI'],'?action=validate" title="Valider le panier">Valider le panier</a></p>';
-        atl_panier_action($bd);
+        atl_valider_commande($bd);
         mysqli_close($bd);
-    }
-}
-
-function atl_panier_action($bd){
-    //Retrait du panier
-    if(isset($_GET['action']) && $_GET['action']==="delete"){
-        at_supprimer_article($_GET['id']);
-        unset($_GET['action']);
-        unset($_GET['id']);
-        $url=strtok($_SERVER["REQUEST_URI"], '?');
-        header("Location: $url");
-        exit();
-    }
-
-    //Modifier quantité
-    if(isset($_GET['action']) && isset($_GET['qte']) && isset($_GET['id']) && at_est_entier($_GET['id']) && at_est_entier($_GET['qte']) &&  $_GET['action']==="change"){
-        at_modifier_qte_article($_GET['id'],$_GET['qte']);
-        unset($_GET['action']);
-        unset($_GET['id']);
-        unset($_GET['qte']);
-        $url=strtok($_SERVER["REQUEST_URI"], '?');
-        header("Location: $url");
-        exit();
-    }
-
-    //Vider le panier
-    if(isset($_GET['action']) && $_GET['action']==="reset"){
-        at_supprime_panier();
-        unset($_GET['action']);
-        $url=strtok($_SERVER["REQUEST_URI"], '?');
-        header("Location: $url");
-        exit();
-    }
-    
-    //Valider panier
-    if(isset($_GET['action']) && $_GET['action']==="validate"){
-        if(!at_est_authentifie()){
-            unset($_GET['action']);
-            header("Location: ./login.php");
-            exit();
-        }
-        header("Location: ./validate.php");
-        exit();
+        echo '<p><a href="../index.php" title="Retour vers index">Retour à l\'acceuil</a></p>';
     }
 }
 
@@ -141,7 +92,6 @@ function atl_aff_livre($livre) {
     $livre = at_html_proteger_sortie($livre);
     echo 
         '<article class="arRecherche">', 
-            '<a class="removeFromCart" href="',$_SERVER['REQUEST_URI'],'?action=delete&id=',$livre['id'],'" title="Retirer du panier"></a>',
             '<a href="details.php?article=', $livre['id'], '" title="Voir détails"><img src="../images/livres/', $livre['id'], '_mini.jpg" alt="', 
             $livre['titre'],'"></a>',
             '<h5>', $livre['titre'], '</h5>',
@@ -159,15 +109,59 @@ function atl_aff_livre($livre) {
             '<form name="order" action="panier.php" method="get" style="display: inline-block;">',
             '<input name="action" type="hidden" value="change">',
             '<input name="id" type="hidden" value="',$livre['id'],'">',
-            'Quantité : ',at_aff_liste_nombre("qte",0,100,1, at_qte_article($livre['id']),"onchange=this.form.submit()"),
+            'Quantité :',at_qte_article($livre['id']),
             '</form>',
             '<br>Prix total pour cet article : ',at_montant($livre['id']),' &euro;',
         '</article>';
 }
 
-//Gérer la validation des paramètres
-//protéger entrée/sortie
-//Gérer les condition : si id pas dans array, erreur
-//Gérer la validation du panier
 
+function atl_valider_commande($bd){
+    //Valider le panier
+    if(!at_est_authentifie()){
+        header("Location: ./login.php");
+        return;
+    }
+    unset($_GET['action']);
+    $id=$_SESSION['id'];//at_bd_proteger_entree($bd, $_SESSION['id']);
+    $sql="SELECT cliID,cliAdresse
+    FROM clients
+    WHERE cliID = $id";
+
+    $res = mysqli_query($bd,$sql) or at_bd_erreur($bd,$sql);
+
+    if(mysqli_num_rows($res) == 0) {
+        echo 'Vous n\'avez pas renseigné votre adresse de livraison !';
+        mysqli_free_result($res);
+        return;
+    }
+    $row=mysqli_fetch_assoc($res);
+    if(empty(trim($row['cliAdresse']))){
+        echo '<p class="error">Vous n\'avez pas renseigné votre adresse de livraison.
+        <br>Cliquez <a href="./compte.php" title="Accès à la page compte">ici</a> pour la renseigner.</p>';
+        mysqli_free_result($res);
+        return;
+    }
+    mysqli_free_result($res);
+    $id=at_bd_proteger_entree($bd,$_SESSION['id']);
+    $date=date("Ymd");
+    $date=at_bd_proteger_entree($bd,$date);
+    $hour=date("Hi");
+    $hour=at_bd_proteger_entree($bd,$hour);
+    $sql="INSERT INTO `commandes` (`coIDClient`, `coDate`, `coHeure`) VALUES
+    ($id,$date,$hour)";
+
+    $res = mysqli_query($bd,$sql) or at_bd_erreur($bd,$sql);
+    $id_cmd=mysqli_insert_id($bd);
+
+    $sql="INSERT INTO `compo_commande` (`ccIDCommande`, `ccIDLivre`, `ccQuantite`) VALUES";
+    foreach($_SESSION['panier']['idProd'] as $prod){
+        $qte=at_qte_article($prod);
+        $sql.="($id_cmd,$prod,$qte),";
+    }
+    $sql=mb_substr($sql, 0, -1);
+    $res = mysqli_query($bd,$sql) or at_bd_erreur($bd,$sql);
+
+    at_supprime_panier();
+}
 ?>

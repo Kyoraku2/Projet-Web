@@ -273,7 +273,7 @@ function at_ajouter_wishlist($bd,$idl,$prefix='./',$cles_facultatives = array())
     if(!at_est_authentifie()){
         unset($_GET['action']);
         header('Location: '.$prefix.'login.php');
-        return;
+        exit();
     }
     //Check for duplicate or non existant
     $id_livre=at_bd_proteger_entree($bd,$idl);
@@ -294,6 +294,7 @@ function at_redirections_after_add($type,$prefix,$cles_facultatives,$id){
         $_SESSION['tmpidlivre']=$id;
         $_SESSION['tmptype']=$type;
         header('Location: '.$prefix.'added.php');
+        exit();
     }else{
         $url=strtok($_SERVER['REQUEST_URI'],'?');
         if(!empty($cles_facultatives)){
@@ -312,6 +313,7 @@ function at_redirections_after_add($type,$prefix,$cles_facultatives,$id){
         $_SESSION['tmpidlivre']=$id;
         $_SESSION['tmptype']=$type;
         header('Location: '.$prefix.'added.php');
+        exit();
     }
 }
 ?>

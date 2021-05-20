@@ -137,22 +137,17 @@ function atl_traitement_connexion() {
         
         if (mysqli_num_rows($res) == 0) {
             $erreurs[] = 'Erreur dans les identifiants saisis.';
-            // libération des ressources 
-            mysqli_free_result($res);
-            mysqli_close($bd);
         }else{ 
             $row=mysqli_fetch_assoc($res);
             $bdpasse=$row['cliPassword'];
             $id=$row['cliID'];
             if(!password_verify($passe,$bdpasse)){
                 $erreurs[] = 'Erreur dans les identifiants saisis.';
-                mysqli_free_result($res);
-                mysqli_close($bd);
             }
-            // libération des ressources 
-            //mysqli_free_result($res);
         }
-        
+        // libération des ressources 
+        mysqli_free_result($res);
+        mysqli_close($bd);
     }
     
     // s'il y a des erreurs ==> on retourne le tableau d'erreurs    
@@ -163,7 +158,6 @@ function atl_traitement_connexion() {
     // mémorisation de l'ID dans une variable de session 
     // cette variable de session permet de savoir si le client est authentifié
     $_SESSION['id'] = $id;
-    mysqli_close($bd);
 }
 
 ?>

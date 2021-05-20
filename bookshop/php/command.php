@@ -25,7 +25,7 @@ function atl_aff_contenu(){
         Vous allez être redirigé vers la page de connexion dans 5 secondes</h3>',
         '<p>Cliquez <a href="login.php" title="Connexion">ici</a> si la redirection vers la page de connexion ne fonctionne pas</p>';
         header("Refresh:5;url=./login.php");
-        return;
+        exit();
     }
     echo '<h1>Historique des commandes</h1>',
     '<p>Pour retourner à votre page de compte, cliquez <a href="./compte.php" title="Compte">ici</a>.</p>';
@@ -40,12 +40,6 @@ function atl_aff_contenu(){
     AND al_IDAuteur = auID
     AND coIDClient=$id";
     $res = mysqli_query($bd, $sql) or at_bd_erreur($bd,$sql);
-    /*
-    allcmd = array(
-        array(livres),
-        array(livres)
-    )
-    */
 
     $all_commands=array();
     $lastBookID = -1;
@@ -63,27 +57,7 @@ function atl_aff_contenu(){
     if($lastCmdID != -1){
         $all_commands[$lastCmdID]=$cmd; 
     }
-/*
-    while ($t = mysqli_fetch_assoc($res)) {
-        if ($t['liID'] != $lastID) {
-            if ($lastID != -1) {
-                $livres[]=$livre;
-            }
-            $lastID = $t['liID'];
-            $livre = array( 'id' => $t['liID'], 
-            'titre' => $t['liTitre'],
-            'edNom' => $t['edNom'],
-            'edWeb' => $t['edWeb'],
-            'pages' => $t['liPages'],
-            'ISBN13' => $t['liISBN13'],
-            'prix' => $t['liPrix'],
-            'auteurs' => array(array('prenom' => $t['auPrenom'], 'nom' => $t['auNom']))
-            );
-        }else{
-            $livre['auteurs'][] = array('prenom' => $t['auPrenom'], 'nom' => $t['auNom']);
-        }
-    }
-    */
+
     mysqli_data_seek($res,0);
 
     $lastCmdID=-1;
@@ -174,6 +148,4 @@ function atl_aff_livre($livre,$prix_ligne) {
         '</article><br>';
 }
 
-//redirection y'a un pb
-//Voir pour toggle les contenus
 ?>

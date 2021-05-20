@@ -47,7 +47,6 @@ function atl_aff_livre($livre) {
     $auteurs = $livre['auteurs'];
     $livre = at_html_proteger_sortie($livre);
     echo '<article class="arRecherche">', 
-    // TODO : à modifier pour le projet  
     '<a class="addToCart" href="',$_SERVER['REQUEST_URI'],'&amp;action=add" title="Ajouter au panier"></a>',
     '<a class="addToWishlist"  href="',$_SERVER['REQUEST_URI'],'&amp;action=addW" title="Ajouter à la liste de cadeaux"></a>',
     '<a href="details.php?article=', $livre['id'], '" title="Voir détails"><img src="../images/livres/', $livre['id'], '_mini.jpg" alt="', 
@@ -101,17 +100,19 @@ function atl_aff_contenu($id,$erreurs){
     }
 
     if(empty($livre)){
-        $erreurs[] = '- Aucun livre ne correspond à l\'article saisie.';
-        if(isset($_GET['action'])){
-            unset($_GET['action']);
-            header("Location: details.php?article=".$_GET['article']);
-        }
         mysqli_free_result($res);
         mysqli_close($bd);
+        $erreurs[] = '- Aucun livre ne correspond à l\'article saisie.';
+        if(isset($_GET['action'])){
+            header("Location: details.php?article=".$_GET['article']);
+            exit();
+        }
     }else{
         atl_get_action($livre,$bd);
     }
     if ($erreurs) {
+        mysqli_free_result($res);
+        mysqli_close($bd);
         $nbErr = count($erreurs);
         $pluriel = $nbErr > 1 ? 's':'';
         echo '<p class="error">',

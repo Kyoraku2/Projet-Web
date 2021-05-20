@@ -204,11 +204,11 @@ function atl_get_action($livres,$bd,$recherche){
         }else{
             $url=strtok($_SERVER['REQUEST_URI'],'?');
             $url.=isset($recherche['type'])?"?type=".$recherche['type']."&quoi=".$recherche['quoi']:"";
-            header("Location: $url");   
+            header("Location: $url");  
+            exit();
         }
     }
-
-
+    
     //Add to wish
     if(isset($_GET['action']) && isset($_GET['id'])  && $_GET['action']==="addW" && at_est_entier($_GET['id'])){
         at_ajouter_wishlist($bd,$_GET['id'],'./',array('quoi','type'));
