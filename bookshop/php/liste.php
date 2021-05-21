@@ -147,7 +147,11 @@ function atl_aff_contenu($recherche,$erreurs){
     // libération des ressources
     mysqli_free_result($res);
     if(!isset($_GET['quoi'])){
-        echo'<p><a href="'.$_SERVER['REQUEST_URI'],'?action=resetW&id=',$livre['id'],'" title="Vider la liste">Réinitialiser la liste</a></p>';
+        echo '<div class="box_button">',
+        '<div class="btn1">',
+        '<a href="'.$_SERVER['REQUEST_URI'],'?action=resetW&id=',$livre['id'],'" title="Vider la liste">Réinitialiser</a>',
+        '</div>',
+        '</div>';
     }
     atl_get_action($livres,$bd,$recherche);
     mysqli_close($bd);

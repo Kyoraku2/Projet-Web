@@ -443,23 +443,40 @@ hr{
     border: 1px dashed #FF9B37;
 }
 
-.valide_empty{
-    margin: auto;
-    background: transparent url(../images/bouton.png) no-repeat;
-    height: 26px;
-    width: 102px;
+.box_button{
     text-align: center;
+    vertical-align: top;
+}
+
+
+.box_button a{
+    vertical-align: middle;
+    text-decoration: none;
     color: #FFF;
     border: none;	
     font-weight: bold;
     cursor: pointer;
 }
 
-.valide_empty a{
-    vertical-align: middle;
-    text-decoration: none;
+  .btn1 {
+    display: inline-block;
+    height: 26px;
+    width: 102px;
+    margin: 10px auto;
+    text-align: center;
     color: #FFF;
-}
+    background: transparent url(../images/bouton.png) no-repeat;
+  }
+  
+  .btn2 {
+    display: inline-block;
+    height: 26px;
+    width: 102px;
+    margin-left:1em;
+    text-align: center;
+    color: #FFF;
+    background: transparent url(../images/bouton.png) no-repeat;
+  }
 
 /**********************************************************
                     Formulaires
