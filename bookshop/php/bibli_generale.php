@@ -321,6 +321,7 @@ function at_aff_liste_mois($nom, $defaut) {
  * @param int       $max       La valeur maximale de la liste 
  * @param int       $pas       Le pas d'itération (si positif, énumération croissante, sinon décroissante) 
  * @param int       $default   La valeur qui doit être sélectionnée par défaut. 
+ * @param string    $option    Permet de rajouter des éléments tels que 'onchange=this.form.submit()' 
  */
 function at_aff_liste_nombre($nom, $min, $max, $pas, $defaut,$option) {
     echo '<select name="', $nom, '" ',$option,'>';

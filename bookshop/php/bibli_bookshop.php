@@ -142,7 +142,15 @@ function at_session_exit($page = '../index.php') {
     exit();
 }
 
-
+//___________________________________________________________________
+/**
+ * Fonction permettant de créer un panier
+ * La panier sera contenu dans la variable de session, ne nécessitant pas d'être connecté
+ * pour pouvoir le remplir, vider, modifier
+ * 
+ * @return boolean Si le panier n'existe pas il est créé puis true est retourné, si il existe la fonction retourne simplement true
+ *
+ */
 function at_creation_panier(){
     if (!isset($_SESSION['panier'])){
        $_SESSION['panier']=array();
@@ -153,10 +161,17 @@ function at_creation_panier(){
     return true;
  }
 
+//___________________________________________________________________
+/**
+ * Permet d'ajouter un article à son panier en fonction de son id, la quantité initiale et le prix de ce produit
+ * 
+ * @param int    idProd       L'id du produit dans la BD (aussi contenu dans le panier)
+ * @param int    qteProduit   La quantité initiale lors de l'ajout, ici égale à 1 de manière générale
+ * @param float  prixProduit  Le prix associé au produit
+ */
  function at_ajouter_article($idProd,$qteProduit,$prixProduit){
-    //Si le panier existe
     if (at_creation_panier()){
-        //Si le produit existe déjà on ajoute seulement la quantité
+        //Si le produit existe déjà dans le panier, on ajoute 1 à la quantité
         $positionProduit = array_search($idProd,  $_SESSION['panier']['idProd']);
         if ($positionProduit !== false){
            $_SESSION['panier']['qteProduit'][$positionProduit] += $qteProduit ;
@@ -166,42 +181,45 @@ function at_creation_panier(){
             array_push( $_SESSION['panier']['qteProduit'],$qteProduit);
             array_push( $_SESSION['panier']['prixProduit'],$prixProduit);
         }
-    }else{
-        echo "Un problème est survenu veuillez contacter l'administrateur du site.";
     }
 }
 
+//___________________________________________________________________
+/**
+ * Supprime un article du panier
+ * 
+ * @param int    idProd       L'id du produit dans la BD (aussi contenu dans le panier)
+ */
 function at_supprimer_article($idProd){
-    //Si le panier existe
     if (at_creation_panier()){
-       //Nous allons passer par un panier temporaire
-       $tmp=array();
-       $tmp['idProd'] = array();
-       $tmp['qteProduit'] = array();
-       $tmp['prixProduit'] = array();
- 
-       for($i = 0; $i < count($_SESSION['panier']['idProd']); $i++){
+        //Panier temporaire qui contiendra tous les produits à garder
+        $tmp=array();
+        $tmp['idProd'] = array();
+        $tmp['qteProduit'] = array();
+        $tmp['prixProduit'] = array();
+        for($i = 0, $nb=count($_SESSION['panier']['idProd']); $i < $nb; $i++){
             if ($_SESSION['panier']['idProd'][$i] !== $idProd){
                 array_push( $tmp['idProd'],$_SESSION['panier']['idProd'][$i]);
                 array_push( $tmp['qteProduit'],$_SESSION['panier']['qteProduit'][$i]);
                 array_push( $tmp['prixProduit'],$_SESSION['panier']['prixProduit'][$i]);
             }
         }
-        //On remplace le panier en session par notre panier temporaire à jour
+        //Contient tous les livres sauf celui d'id $idProd
         $_SESSION['panier'] =  $tmp;
-        //On efface notre panier temporaire
         unset($tmp);
-    }else{
-        echo "Un problème est survenu veuillez contacter l'administrateur du site."; 
     }
 }
 
+//___________________________________________________________________
+/**
+ * Modifie la quantité d'un produit donné dans le panier
+ * 
+ * @param int    idProd       L'id du produit dans la BD (aussi contenu dans le panier)
+ * @param int    qteProduit   La quantité modifiée. Si <=0 : suppression de l'article, sinon la quantité est mise à jour
+ */
 function at_modifier_qte_article($idProd,$qteProduit){
-    //Si le panier existe
     if (at_creation_panier()){
-       //Si la quantité est positive on modifie sinon on supprime l'article
         if ($qteProduit > 0){
-            //Recherche du produit dans le panier
             $positionProduit = array_search($idProd,  $_SESSION['panier']['idProd']);
             if ($positionProduit !== false){
                 $_SESSION['panier']['qteProduit'][$positionProduit] = $qteProduit ;
@@ -209,43 +227,74 @@ function at_modifier_qte_article($idProd,$qteProduit){
         }else{
             at_supprimer_article($idProd);
         }
-    }else{
-        echo "Un problème est survenu veuillez contacter l'administrateur du site.";
     }
 }
 
+//___________________________________________________________________
+/**
+ * Accès à la quantité d'un produit donné dans le panier
+ * Notamment utile dans le récapitulatif de commandes
+ * 
+ * @param  int    idProd      L'id du produit dans la BD (aussi contenu dans le panier)
+ * @return int                La quantité du produit correspondant, 0 si il n'est pas présent dans le panier
+ */
 function at_qte_article($idProd){
     //Recherche du produit dans le panier
-    $positionProduit = array_search($idProd,  $_SESSION['panier']['idProd']);
-    if ($positionProduit !== false){
-        return $_SESSION['panier']['qteProduit'][$positionProduit];
+    if (at_creation_panier()){
+        $positionProduit = array_search($idProd,  $_SESSION['panier']['idProd']);
+        if ($positionProduit !== false){
+            return $_SESSION['panier']['qteProduit'][$positionProduit];
+        }
     }
     return 0;
 }
 
+//___________________________________________________________________
+/**
+ * Calcul du montant global du panier
+ * Notammant utile dans les affichage de prix total lors de la confection du panier
+ * par l'utilisateur
+ * 
+ * @return int   Le montant global du panier, 0 si vide
+ */
 function at_montant_global(){
     $total=0;
-    $size=count($_SESSION['panier']['idProd']);
-    for($i = 0; $i < $size; $i++){
-       $total += $_SESSION['panier']['qteProduit'][$i]*$_SESSION['panier']['prixProduit'][$i];
+    if (at_creation_panier()){
+        $size=count($_SESSION['panier']['idProd']);
+        for($i = 0; $i < $size; $i++){
+            $total += $_SESSION['panier']['qteProduit'][$i]*$_SESSION['panier']['prixProduit'][$i];
+        }
     }
     return $total;
 }
 
+//___________________________________________________________________
+/**
+ * Calcul du montant total pour un article donné
+ * En fonction de son id, le montant correspont à la quantité associée à cet id multipliée
+ * par le prix associé à cet id lui aussi
+ * 
+ * @param  int    idProd      L'id du produit dans la BD (aussi contenu dans le panier)
+ * @return int                Le montant total pour un produit du panier, 0 si non présent dans le panier
+ */
 function at_montant($idProd){
-    //Si le panier existe
     $montant=0;
     if (at_creation_panier()){
-        //Si le produit existe déjà
         $positionProduit = array_search($idProd,  $_SESSION['panier']['idProd']);
         if ($positionProduit !== false){
            $montant=$_SESSION['panier']['qteProduit'][$positionProduit]*$_SESSION['panier']['prixProduit'][$positionProduit];
         }
-    }else{
-        echo "Un problème est survenu veuillez contacter l'administrateur du site.";
     }
     return $montant;
 }
+
+//___________________________________________________________________
+/**
+ * Permet de compter le nombre total d'article dans le panier
+ * Pratique pour afficher à l'utilisateur combien d'articles composent son panier
+ * 
+ * @return int     Le nombre d'article dans le panier, 0 si vide
+ */
 
 function at_compter_articles(){
     if (isset($_SESSION['panier'])){
@@ -259,23 +308,52 @@ function at_compter_articles(){
     return 0;
 }
 
+//___________________________________________________________________
+/**
+ * Permet de vider un panier
+ */
 function at_supprime_panier(){
     unset($_SESSION['panier']);
 }
 
+//___________________________________________________________________
+/**
+ * Permet d'ajouter un produit au panier suite à l'action d'un utilisateur
+ * Dans un premier temps, l'article est ajouté à la variable $_SESSION
+ * Ensuite l'utilisateur est redirigé là d'où il vient ou vers le panier, selon son choix
+ * 
+ * @param int      id                 L'id du produit dans la BD (aussi contenu dans le panier)
+ * @param int      prix               Le prix du produix
+ * @param string   prefix             Permet de situer le répertoire de la page dans laquelle l'action à eu lieu
+ * @param array    cles_facultatives  Ensemble de clés de la querystring, utilisé lors des redirections  
+ */
+
 function at_button_ajouter_panier($id,$prix,$prefix='./',$cles_facultatives = array()){
     at_ajouter_article($id,1,$prix);
-    unset($_GET['action']);
     at_redirections_after_add('cart',$prefix,$cles_facultatives,$id);
 }
 
+//___________________________________________________________________
+/**
+ * Permet d'ajouter un produit à la liste de souhaits
+ * Dans un premier temps, il faut que l'utilisateur soit connecté
+ * Ensuite, si c'est le cas le produit est ajouté dans la table listes de la BD
+ * ,sinon il est redirigé vers la page de connexion 
+ * Enfin, il est redirigé de la même manière que lors d'un ajout dans le panier
+ * 
+ * @param object   bd                 Lien vers la BD
+ * @param int      idl                L'id du produit dans la BD (aussi contenu dans le panier)
+ * @param string   prefix             Permet de situer le répertoire de la page dans laquelle l'action à eu lieu
+ * @param array    cles_facultatives  Ensemble de couple de la querystring, utilisé lors des redirections  
+ */
+
 function at_ajouter_wishlist($bd,$idl,$prefix='./',$cles_facultatives = array()){
     if(!at_est_authentifie()){
-        unset($_GET['action']);
         header('Location: '.$prefix.'login.php');
         exit();
     }
-    //Check for duplicate or non existant
+    //Vérifie aussi si l'article est déjà présent dans la liste
+    //De sorte à ne pas ajouiter de doublons
     $id_livre=at_bd_proteger_entree($bd,$idl);
     $id_client=at_bd_proteger_entree($bd,$_SESSION['id']);
     $sql="INSERT INTO listes (listIDClient,listIDLivre) SELECT $id_client,$id_livre
@@ -284,9 +362,27 @@ function at_ajouter_wishlist($bd,$idl,$prefix='./',$cles_facultatives = array())
     $res = mysqli_query($bd, $sql) or at_bd_erreur($bd,$sql);
     $insert=(mysqli_num_rows($res)==0)?1:0;
     mysqli_free_result($res);
-    unset($_GET['action']);
     at_redirections_after_add('wishlist',$prefix,$cles_facultatives,$idl);
 }
+
+//___________________________________________________________________
+/**
+ * Permet de régiriger l'utilisateur vers la page de validation d'ajout
+ * Si $_SERVER['HTTP_REFERER'] est définit, la variable est utilisée
+ * Sinon une url est construite en se basant sur les clés_facultatives et la page courante
+ * 
+ * Pour ce qui est de la redirection en elle même, 3 choses sont sauvegardées dans la varibale
+ * super globale $_SESSION de manière temporaire : (de sorte à éviter tout problème avec la querystring et les utilisateurs)
+ * tmpback : la page précedente qui sera utile dans l'option "retour" de la page de validation
+ * tmpidlivre : l'id du livre ajouté pour pouvoir l'afficher
+ * tmptype : qui indique si l'ajout à été fait dans la liste de souhaits ou dans le panier
+ * Une fois sur la page de validation et le traitement fait, ces variables temporaires sont immédiatement supprimées
+ * 
+ * @param string   type               L'endroit où a été ajouté le produit : panier ou liste de souhaits
+ * @param string   prefix             Permet de situer le répertoire de la page dans laquelle l'action à eu lieu
+ * @param array    cles_facultatives  Ensemble de couple de la querystring, utilisé lors des redirections  
+ * @param int      id                 L'id du produit dans la BD (aussi contenu dans le panier)
+ */
 
 function at_redirections_after_add($type,$prefix,$cles_facultatives,$id){
     if(isset($_SERVER['HTTP_REFERER'])){

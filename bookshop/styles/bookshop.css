@@ -413,18 +413,18 @@ article.arHist img{
     height: 100px; 
 }
 
-article.arRecherche {           /* utilisé dans recherche.php */
+article.arRecherche, article.arCart {
     position: relative;
     margin: 30px 10px 0 10px;	
     padding: 10px;
     border: solid 2px transparent;
 }
 
-article.arRecherche:hover {
+article.arRecherche:hover, article.arCart:hover {
     border-color: #FF9B37; 
     background: #FFFFE0;
 }
-article.arRecherche img{
+article.arRecherche img, article.arCart img{
     float: left; 
     margin: 0 10px 10px 0; 
     border: solid 1px #000; 
@@ -443,40 +443,67 @@ hr{
     border: 1px dashed #FF9B37;
 }
 
-.box_button{
-    text-align: center;
-    vertical-align: top;
-}
-
-
-.box_button a{
-    vertical-align: middle;
+/*** Liens de validation divers***/
+a[title*="Valider le panier"], a[title*="précédente"], a[title*="vers index"]{
     text-decoration: none;
+    height: 26px;
+    width: 102px;
+    padding: 0.4em;
+    padding-left: 2em;
+    padding-right: 2em;
+    text-align: center;
     color: #FFF;
-    border: none;	
+    border: none;
+    background: transparent url(../images/bouton.png) no-repeat;
     font-weight: bold;
     cursor: pointer;
 }
 
-  .btn1 {
-    display: inline-block;
+a[title*="Aller vers le"]{
+    text-decoration: none;
     height: 26px;
     width: 102px;
-    margin: 10px auto;
+    padding: 0.4em;
+    padding-left: 2.1em;
+    padding-right: 2.1em;
     text-align: center;
     color: #FFF;
+    border: none;
     background: transparent url(../images/bouton.png) no-repeat;
-  }
-  
-  .btn2 {
-    display: inline-block;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+a[title*="Aller vers la"]{
+    text-decoration: none;
     height: 26px;
     width: 102px;
-    margin-left:1em;
+    padding: 0.4em;
+    padding-left: 1.5em;
+    padding-right: 2.1em;
     text-align: center;
     color: #FFF;
+    border: none;
     background: transparent url(../images/bouton.png) no-repeat;
-  }
+    font-weight: bold;
+    cursor: pointer;
+}
+
+a[title*="Vider"]{
+    margin-left: auto;
+    text-decoration: none;
+    height: 26px;
+    width: 102px;
+    padding: 0.4em;
+    padding-left: 2.4em;
+    padding-right: 2.5em;
+    text-align: center;
+    color: #FFF;
+    border: none;
+    background: transparent url(../images/bouton.png) no-repeat;
+    font-weight: bold;
+    cursor: pointer;
+}
 
 /**********************************************************
                     Formulaires

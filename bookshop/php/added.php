@@ -76,8 +76,11 @@ function atl_aff_contenu(){
         return;
     }
     atl_aff_livre($livre);
-    echo '<p><a href="',$_SESSION['tmpback'],'" title="Retour à la page précédente">Retourner à la page précédente</a>',
-    '<p><a href="',($_SESSION['tmptype']==='cart')?'./panier.php':'./liste.php','" title="',($_SESSION['tmptype']==='cart')?'Panier':'Liste de souhait(s)','">Aller vers ',($_SESSION['tmptype']==='cart')?'le panier':'la liste de souhait(s)','</a>';
+    echo '<div style="width: 25%; margin:1em auto;">',
+    '<a href="',($_SESSION['tmptype']==='cart')?'./panier.php':'./liste.php','" title="',($_SESSION['tmptype']==='cart')?'Aller vers le Panier':'Aller vers la Liste de souhait(s)','">',($_SESSION['tmptype']==='cart')?'Panier':'Souhaits','</a>',
+    '<a href="',$_SESSION['tmpback'],'" title="Retour à la page précédente">Retour</a>',
+    '</div>';
+    
     unset($_SESSION['tmpback']);
     unset($_SESSION['tmpidlivre']);
     unset($_SESSION['tmptype']);

@@ -6,10 +6,6 @@ require_once '../php/bibli_generale.php';
 require_once ('../php/bibli_bookshop.php');
 
 error_reporting(E_ALL);
-/*if(!isset($_SESSION['HTTP_REFERER']) || !at_est_authentifie()){
-    header('Location: ../index.php');
-    exit();
-}*/
 
 at_aff_debut('BookShop | Validation Panier', '../styles/bookshop.css', 'main');
 
@@ -80,9 +76,13 @@ function atl_aff_contenu(){
         }else{
             mysqli_free_result($res);
         }
+        $montant=at_montant_global();
         atl_valider_commande($bd);
         mysqli_close($bd);
-        echo '<p><a href="../index.php" title="Retour vers index">Retour à l\'acceuil</a></p>';
+        echo '<h3>Sous-total : ',$montant,' &euro;</h3>',
+        '<div style="width: 15%; margin:1em auto;">',
+        '<p><a href="../index.php" title="Retour vers index">Retour</a></p>',
+        '</div>';
     }
 }
 
@@ -106,12 +106,8 @@ function atl_aff_livre($livre) {
     echo    '<br>Editeur : <a class="lienExterne" href="http://', trim($livre['edWeb']), '" target="_blank">', $livre['edNom'], '</a><br>',
             'Prix : ', $livre['prix'], ' &euro;<br>',
             '<br><br><br>',
-            '<form name="order" action="panier.php" method="get" style="display: inline-block;">',
-            '<input name="action" type="hidden" value="change">',
-            '<input name="id" type="hidden" value="',$livre['id'],'">',
             'Quantité :',at_qte_article($livre['id']),
-            '</form>',
-            '<br>Prix total pour cet article : ',at_montant($livre['id']),' &euro;',
+            '<br><h5>Prix total pour cet article : ',at_montant($livre['id']),' &euro;</h5>',
         '</article>';
 }
 
@@ -120,9 +116,8 @@ function atl_valider_commande($bd){
     //Valider le panier
     if(!at_est_authentifie()){
         header("Location: ./login.php");
-        return;
+        exit();
     }
-    unset($_GET['action']);
     $id=$_SESSION['id'];//at_bd_proteger_entree($bd, $_SESSION['id']);
     $sql="SELECT cliID,cliAdresse
     FROM clients

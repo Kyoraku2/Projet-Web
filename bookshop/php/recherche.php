@@ -74,7 +74,7 @@ ob_end_flush();
 function atl_aff_contenu($recherche, $erreurs) {
     $position=-1;
     $totalBooks=-1;
-    $pagination=5;
+    $pagination=1;
     if(isset($_GET['p']) && at_est_entier($_GET['p'])) {
         $position = (int) $_GET['p'];
     }
@@ -158,13 +158,13 @@ function atl_aff_contenu($recherche, $erreurs) {
 
         $totalBooks=count($livres);
         if($totalBooks!=0){
-            if($position>$totalBooks){
+            if($position>=$totalBooks||$position<0){
                 $position=0;
             }
             if($position%$pagination!==0){
                 $position-=$position%$pagination;
             }
-            
+
             for($i=$position;$i<$position+$pagination;$i++){
                 if($i>=$totalBooks){
                     break;

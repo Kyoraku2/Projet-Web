@@ -28,10 +28,10 @@ function atl_aff_contenu(){
             echo '<h3>Votre panier est vide</h3>';
             return;
         }
-        echo '<h3>Voici votre panier',
+        echo '<h1>Voici votre panier',
         (at_est_authentifie())?"":" , connectez vous pour le valider",
         ' (',$nb_articles,' article',($nb_articles>1)?"s)":")",
-        '</h3>',
+        '</h1>',
         '<hr>';
         // ouverture de la connexion, requête
         $bd = at_bd_connecter();
@@ -82,16 +82,11 @@ function atl_aff_contenu(){
         }
 
         //Montant total
-        echo '<hr>','<h3>Prix total de la commande : ',at_montant_global(),' &euro;</h3>';
+        echo '<hr>','<h3>Sous-total : ',at_montant_global(),' &euro;</h3>';
 
-        echo '<div class="box_button">',
-        '<div class="btn1">',
+        echo '<div style="width: 25%; margin:0 auto;">',
         '<a href="',$_SERVER['REQUEST_URI'],'?action=validate" title="Valider le panier">Valider</a>',
-        '</div>',
-        '<div class="btn2">',
-        '<a href="',$_SERVER['REQUEST_URI'],'?action=reset" title="Vider le panier">Vider</a>',
-        '</div>',
-        '</div>';
+        '<a href="',$_SERVER['REQUEST_URI'],'?action=reset" title="Vider le panier">Vider</a></div>';
         atl_panier_action($bd);
         mysqli_close($bd);
     }
@@ -145,7 +140,7 @@ function atl_aff_livre($livre) {
     $auteurs = $livre['auteurs'];
     $livre = at_html_proteger_sortie($livre);
     echo 
-        '<article class="arRecherche">', 
+        '<article class="arCart">', 
             '<a class="removeFromCart" href="',$_SERVER['REQUEST_URI'],'?action=delete&id=',$livre['id'],'" title="Retirer du panier"></a>',
             '<a href="details.php?article=', $livre['id'], '" title="Voir détails"><img src="../images/livres/', $livre['id'], '_mini.jpg" alt="', 
             $livre['titre'],'"></a>',
