@@ -24,9 +24,12 @@ if (!at_est_authentifie()){
 /*------------------------- Etape 2 --------------------------------------------
 - génération du code HTML de la page
 ------------------------------------------------------------------------------*/
-
+/**
+ * Connexion à la base de données et requête sql pour récupérer tous les informations sur tous les clients
+ * On cherche ensuite la ligne qui correspond à l'utilisateur actuel
+ */
 $bd = at_bd_connecter();
-
+    
     $sql = "SELECT cliID,cliEmail,cliNomPrenom,cliPassword,cliAdresse,cliVille,cliCP,cliPays FROM clients";
     $res = mysqli_query($bd, $sql) or at_bd_erreur($bd, $sql);
     $t = mysqli_fetch_assoc($res);
@@ -36,16 +39,14 @@ $bd = at_bd_connecter();
     
     
 
-at_aff_debut('BookShop | Inscription', '../styles/bookshop.css', 'main');
+at_aff_debut('BookShop | Compte', '../styles/bookshop.css', 'main');
 
 at_aff_enseigne_entete();
 
-if(!isset($_POST['modif'])){
-    atl_aff_contenu($t);
-}else{
-    $err = (isset($_POST['currpass'])) ? atl_traitement_connexion($t,$bd,$res) : array();
-    atl_aff_contenu2($t,$err);
-}
+$canModify = isset($_POST['modif']) ? TRUE : FALSE;
+$err = (isset($_POST['currpass'])) ? atl_traitement_modification($t,$bd,$res) : array();
+atl_aff_contenu($canModify,$t,$err);
+
 
 
 at_aff_pied('../');
@@ -57,66 +58,80 @@ ob_end_flush();
 
 // ----------  Fonctions locales du script ----------- //
 
-function atl_aff_contenu($t){
-    echo '<h1>Compte Utilisateur</h1>',
-    '<p>Pour accéder à votre historique de commande(s), cliquez <a href="./command.php" title="Historique commandes">ici</a>.</p>';
-    echo '<form method="post" action="compte.php">',
-        '<table>';
-        atl_aff_ligne("Email",$t['cliEmail']);
-        atl_aff_ligne("Nom et Prénom",$t['cliNomPrenom']);
-        atl_aff_ligne("Mot de passe",$t['cliPassword']);
-        atl_aff_ligne("Adresse",$t['cliAdresse']);
-        atl_aff_ligne("Ville",$t['cliVille']);
-        atl_aff_ligne("Code Postal",$t['cliCP']);
-        atl_aff_ligne("Pays",$t['cliPays']);
-    echo '<tr>',
-    '<td colspan="2"><input type="submit" name="modif" value="Modifier les informations" style="width:200px;background-size: 200px 26px"></td>',
-    '</tr>',
-    '</table>',
-    '</form>';
-}
-
-function atl_aff_contenu2($t,$err){
-
+/**
+ * Fonction permettant l'affichage du formulaire permettant à l'utilisateur de modifier ses informations personnelles ou des informations de l'utilisateur non modifiable
+ * @param   boolean $canModify  booléen indiquant si l'on doit afficher le formulaire pour modifier les informations ou si l'on doit juste afficher les informations de l'utilisateur
+ * @param   array   $t          tableau correspondant à la ligne de la table clients contenant les informations de l'utilisateur connecté
+ * @param   array   $err        tableau contenant les erreurs faites par l'utilisateur lors de la validation du formulaire, on affiche le tableau si et seulement si celui-ci contient des erreurs 
+ */
+function atl_aff_contenu($canModify,$t,$err){
+    //Récupération des informations de l'utilisateur et protection des chaines
     $email = at_html_proteger_sortie(trim($t['cliEmail']));
     $nomprenom = at_html_proteger_sortie(trim($t['cliNomPrenom']));
     $adresse = at_html_proteger_sortie(trim($t['cliAdresse']));
     $ville = at_html_proteger_sortie(trim($t['cliVille']));
     $codePostal = at_html_proteger_sortie(trim($t['cliCP']));
     $pays = at_html_proteger_sortie(trim($t['cliPays']));
-    echo '<h1>Compte Utilisateur</h1>';
 
-    if (count($err) > 0) {
-        echo '<p class="error">Votre inscription n\'a pas pu être réalisée à cause des erreurs suivantes : ';
-        foreach ($err as $v) {
-            echo '<br> - ', $v;
+    if($canModify === FALSE){
+        echo '<h1>Compte Utilisateur</h1>',
+        '<p>Pour accéder à votre historique de commande(s), cliquez <a href="./command.php" title="Historique commandes">ici</a>.</p>';
+        echo '<form method="post" action="compte.php">',
+            '<table>';
+            atl_aff_ligne("Email",$email);
+            atl_aff_ligne("Nom et Prénom",$nomprenom);
+            atl_aff_ligne("Mot de passe","");
+            atl_aff_ligne("Adresse",$adresse);
+            atl_aff_ligne("Ville",$ville);
+            atl_aff_ligne("Code Postal",$codePostal);
+            atl_aff_ligne("Pays",$pays);
+        echo '<tr>',
+        '<td colspan="2"><input type="submit" name="modif" value="Modifier les informations" style="width:200px;background-size: 200px 26px"></td>',
+        '</tr>',
+        '</table>',
+        '</form>';
+    }else{
+        
+        echo '<h1>Compte Utilisateur</h1>';
+
+        if (count($err) > 0) {
+            echo '<p class="error">Votre inscription n\'a pas pu être réalisée à cause des erreurs suivantes : ';
+            foreach ($err as $v) {
+                echo '<br> - ', $v;
+            }
+            echo '</p>';    
         }
-        echo '</p>';    
+
+        //affichage du formulaire
+        echo '<form method="post" action="compte.php">',
+            '<table>';
+        at_aff_ligne_input('Email :', array('type' => 'email', 'name' => 'email', 'value' => $email, 'required' => false));
+        at_aff_ligne_input('Nouveau mot de passe (laisser vide si pas de modification) :', array('type' => 'password', 'name' => 'newpass', 'value' => ''));
+        at_aff_ligne_input('Nom et prénom :', array('type' => 'text', 'name' => 'nomprenom', 'value' => $nomprenom, 'required' => false));
+        at_aff_ligne_input('Adresse :', array('type' => 'text', 'name' => 'adresse', 'value' => $adresse));
+        at_aff_ligne_input('Ville :', array('type' => 'text', 'name' => 'ville', 'value' => $ville));
+        at_aff_ligne_input('Code Postal :', array('type' => 'number', 'name' => 'codePostal', 'value' => $codePostal));
+        at_aff_ligne_input('Pays :', array('type' => 'text', 'name' => 'pays', 'value' => $pays));
+        at_aff_ligne_input('Rentrez votre mot de passe actuel :', array('type' => 'password', 'name' => 'currpass', 'value' => '', 'required' => false));        
+        echo '<tr>',
+        '<td colspan="2">
+        <input type="submit" name="modif" value="Valider">',
+        '<input type="reset" value="Réinitialiser">',
+        '</td>',
+        
+        '</tr>',
+        '</table>',
+        '</form>';
     }
-
-
-    echo '<form method="post" action="compte.php">',
-        '<table>';
-    at_aff_ligne_input('Email :', array('type' => 'email', 'name' => 'email', 'value' => $email, 'required' => false));
-    at_aff_ligne_input('Nouveau mot de passe (laisser vide si pas de modification) :', array('type' => 'password', 'name' => 'newpass', 'value' => ''));
-    at_aff_ligne_input('Nom et prénom :', array('type' => 'text', 'name' => 'nomprenom', 'value' => $nomprenom, 'required' => false));
-    at_aff_ligne_input('Adresse :', array('type' => 'text', 'name' => 'adresse', 'value' => $adresse));
-    at_aff_ligne_input('Ville :', array('type' => 'text', 'name' => 'ville', 'value' => $ville));
-    at_aff_ligne_input('Code Postal :', array('type' => 'number', 'name' => 'codePostal', 'value' => $codePostal));
-    at_aff_ligne_input('Pays :', array('type' => 'text', 'name' => 'pays', 'value' => $pays));
-    at_aff_ligne_input('Rentrez votre mot de passe actuel :', array('type' => 'password', 'name' => 'currpass', 'value' => '', 'required' => false));        
-    echo '<tr>',
-    '<td colspan="2">
-    <input type="submit" name="modif" value="Valider">',
-    '<input type="reset" value="Réinitialiser">',
-    '</td>',
-    
-    '</tr>',
-    '</table>',
-    '</form>';
 }
 
+/**
+ * Fonction permettant l'affichage d'une ligne dans la fonction atl_aff_contenu
+ * @param   string  $nom    nom de la case du formulaire
+ * @param   string  $valeur valeur de la case
+*/
 function atl_aff_ligne($nom,$valeur){
+    //On affiche "Mot de passe caché" à la place d'afficher le mot de passe du client hashé
     if($nom === "Mot de passe"){
         $valeur = "<strong>Mot de passe caché</strong>";
     }
@@ -125,8 +140,16 @@ function atl_aff_ligne($nom,$valeur){
     "<td>$valeur</td>";
 }
 
-function atl_traitement_connexion($t,$bd,$res) {
+/**
+ * Fonction permettant le traitement de la modification des informations par l'utilisateur 
+ * @param   array           $t      tableau correspondant à la ligne de la table clients contenant les informations de l'utilisateur connecté
+ * @param   object          $bd     connecteur à la base de données
+ * @param   mysqli_result   $res    resultat de la requête sql (informations de tous les clients)  
+ * @return  array|void              le tableau d'erreurs s'il y en a sinon renvoie vers la page compte.php avec l'affichage des informations de l'utilisateur
+ */
+function atl_traitement_modification($t,$bd,$res) {
 
+    //Pour vérifier les tentatives de piratage
     if( !at_parametres_controle('post', array('email', 'nomprenom', 'newpass','currpass','adresse',
                                                 'ville','pays','codePostal','modif'))) {
         at_session_exit();   
@@ -156,18 +179,17 @@ function atl_traitement_connexion($t,$bd,$res) {
     // vérification des mots de passe
     $newpass = trim($_POST['newpass']);
     $currpass = trim($_POST['currpass']);
-    if (empty($currpass)){
+    $nb = mb_strlen($currpass, 'UTF-8');
+    if ($nb == 0){
         $erreurs[] = 'Vous devez rentrer votre mot de passe actuel'; 
-    }
-    else {
+    }else{
         if (!password_verify($currpass, $t['cliPassword'])){
-            $erreurs[] = 'Le mot de passe actuel ne correspond pas au mot de passe de votre compte.';
+            $erreurs[] = 'Le mot de passe actuel rentré ne correspond pas au mot de passe de votre compte.';
         }
-        if(!empty($newpasse)){
-            $nb = mb_strlen($newpasse, 'UTF-8');
-            if ($nb < LMIN_PASSWORD || $nb > LMAX_PASSWORD){
-                $erreurs[] = 'Le mot de passe doit être constitué de '. LMIN_PASSWORD . ' à ' . LMAX_PASSWORD . ' caractères.';
-            }
+
+        $nb = mb_strlen($newpass, 'UTF-8');
+        if ($nb != 0 && $nb < LMIN_PASSWORD || $nb > LMAX_PASSWORD){
+            $erreurs[] = 'Le nouveau mot de passe doit être constitué de '. LMIN_PASSWORD . ' à ' . LMAX_PASSWORD . ' caractères.';
         }
     }
     
@@ -266,34 +288,32 @@ function atl_traitement_connexion($t,$bd,$res) {
 
     if (count($erreurs) == 0) {
         // vérification de l'unicité de l'adresse email 
-        // (uniquement si pas d'autres erreurs, parce que ça coûte un bras)
 
         // pas utile, car l'adresse a déjà été vérifiée, mais tellement plus sécurisant...
         $email = at_bd_proteger_entree($bd, $email);
-        mysqli_data_seek($t,0);
+        mysqli_data_seek($res,0);
+
         while($t = mysqli_fetch_assoc($res)){
             if($t['cliID'] != $_SESSION['id'] && $t['cliEmail'] == $email){
                 $erreurs[] = 'L\'adresse email spécifiée existe déjà.';
             }
         }
-        // libération des ressources 
-        mysqli_free_result($res);
-    }
-    else{
-        // libération des ressources 
-        mysqli_free_result($res);
     }
         
     
-    // s'il y a des erreurs ==> on retourne le tableau d'erreurs    
-    if (count($erreurs) > 0) {  
+    // s'il y a des erreurs ==> on libère les ressources et on retourne le tableau d'erreurs    
+    if (count($erreurs) > 0) { 
+        mysqli_free_result($res); 
         return $erreurs;    
     }
     
-    // pas d'erreurs ==> enregistrement de l'utilisateur
+    // pas d'erreurs ==> protection des données et enregistrement des nouvelles informations
     $nomprenom = at_bd_proteger_entree($bd, $nomprenom);
 
-    if(empty($newpass)){
+    //Si le nouveau mot de passe est vide alors on garde le même mot de passe
+    //On n'utilise pas la fonction empty() car si l'utilisateur rentre comme mot de passe "false" la fonction empty() retournera true
+    $nb = mb_strlen($newpass, 'UTF-8'); 
+    if($nb == 0){
         $newpass = $currpass;
     }
     $newpass = password_hash($newpass,PASSWORD_DEFAULT);
@@ -311,7 +331,7 @@ function atl_traitement_connexion($t,$bd,$res) {
 
     
     
-
+    //requête permettant de mettre à jour la base de données avec les nouvelles informations
     
     $sql = "UPDATE clients
     SET cliEmail = '$email',
@@ -330,8 +350,8 @@ function atl_traitement_connexion($t,$bd,$res) {
     // libération des ressources
     mysqli_close($bd);
     
-    // redirection vers la page protegee.php
-    header('Location: compte.php'); //TODO : à modifier dans le projet
+    // redirection vers la page compte.php pour l'affichage des nouvelles informations de l'utilisateur 
+    header('Location: compte.php'); 
     exit();
 }
 
