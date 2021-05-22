@@ -262,8 +262,7 @@ function atl_traitement_inscription() {
     // libération des ressources
     mysqli_close($bd);
     
-    // redirection vers la page protegee.php
-    //header('Location: protegee.php'); //TODO : à modifier dans le projet
+    // redirection vers la page d'avant ou index.php s'il l'utilisateur est directement allé sur la page inscription
     if(isset($_POST['destination'])){
         $page=$_POST['destination'];
     }else{
