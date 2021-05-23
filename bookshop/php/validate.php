@@ -1,5 +1,6 @@
 <?php
 
+date_default_timezone_set('Europe/Paris');
 ob_start(); //démarre la bufferisation
 session_start();
 require_once '../php/bibli_generale.php';
@@ -32,12 +33,10 @@ function atl_aff_contenu(){
         }
         // ouverture de la connexion, requête
         $bd = at_bd_connecter();
-        
-        $id_cmd=atl_valider_commande($bd);
 
         $id=at_bd_proteger_entree($bd,$_SESSION['id']);
-        $id_cmd=at_bd_proteger_entree($bd,$id_cmd);
-        /*
+        
+        
         //Vérification de l'adresse de livraison
         $sql="SELECT cliID,cliAdresse
         FROM clients
@@ -58,7 +57,12 @@ function atl_aff_contenu(){
             return;
         }
         mysqli_free_result($res);
-        */
+        
+
+        //Validation de commande
+        $id_cmd=atl_valider_commande($bd);
+        $id_cmd=at_bd_proteger_entree($bd,$id_cmd);
+
         echo '<h1>Merci pour votre achat !</h1>',
         '<h2>Récapitulatif</h2>';
 
@@ -74,13 +78,6 @@ function atl_aff_contenu(){
         AND coID=$id_cmd";
 
         $res = mysqli_query($bd, $sql) or at_bd_erreur($bd,$sql);
-        
-        if(mysqli_num_rows($res) == 0) {
-            echo '<p class="error">Vous n\'avez pas renseigné votre adresse de livraison.
-            <br>Cliquez <a href="./compte.php" title="Accès à la page compte">ici</a> pour la renseigner.</p>';
-            mysqli_free_result($res);
-            return;
-        }
     
         $lastID = -1;
         while ($t = mysqli_fetch_assoc($res)) {
@@ -168,8 +165,9 @@ function atl_valider_commande($bd){
     $hour=at_bd_proteger_entree($bd,$hour);
 
     $sql="INSERT INTO `commandes` (`coIDClient`, `coDate`, `coHeure`) VALUES
-    ($id,$date,$hour)
-    SELECT * WHERE EXISTS (SELECT * FROM clients WHERE cliID=$id AND cliAdresse is not null and cliAdresse!='')";
+    ($id,$date,$hour)";
+    //$sql="INSERT INTO `commandes` (`coIDClient`, `coDate`, `coHeure`)
+    //SELECT $id,$date,$hour WHERE EXISTS (SELECT cliAdresse FROM clients WHERE cliID=$id)";
 
     $res = mysqli_query($bd,$sql) or at_bd_erreur($bd,$sql);
     $id_cmd=mysqli_insert_id($bd);

@@ -2,7 +2,6 @@
 
 ob_start(); //démarre la bufferisation
 session_start();
-date_default_timezone_set('Europe/Paris');
 
 require_once '../php/bibli_generale.php';
 require_once ('../php/bibli_bookshop.php');
