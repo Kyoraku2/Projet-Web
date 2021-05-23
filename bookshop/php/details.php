@@ -1,5 +1,11 @@
 <?php
 
+/* ------------------------------------------------------------------------------
+    Architecture de la page
+    - étape 1 : vérification des paramètres reçus dans l'URL
+    - étape 2 : génération du code HTML de la page
+------------------------------------------------------------------------------*/
+
 ob_start(); //démarre la bufferisation
 session_start();
 require_once '../php/bibli_generale.php';
@@ -7,9 +13,9 @@ require_once ('../php/bibli_bookshop.php');
 
 error_reporting(E_ALL); // toutes les erreurs sont capturées (utile lors de la phase de développement)
 
-at_aff_debut('BookShop | Détail', '../styles/bookshop.css', 'main');
-
-at_aff_enseigne_entete();
+/*------------------------- Etape 1 --------------------------------------------
+- vérification des paramètres reçus dans l'URL
+------------------------------------------------------------------------------*/
 
 $erreurs = array();
 $id=-1;
@@ -28,6 +34,14 @@ if($_GET){
     $erreurs[] = ' - L\'URL doit être de la forme "detail.php?article=id".';
 }
 
+/*------------------------- Etape 2 --------------------------------------------
+- génération du code HTML de la page
+------------------------------------------------------------------------------*/
+
+at_aff_debut('BookShop | Détail', '../styles/bookshop.css', 'main');
+
+at_aff_enseigne_entete();
+
 atl_aff_contenu($id,$erreurs);
 
 at_aff_pied('../');
@@ -36,39 +50,13 @@ at_aff_fin('main');
 
 ob_end_flush();
 
-/**
- *  Affichage d'un livre.
- *
- *  @param  array       $livre      tableau associatif des infos sur un livre (id, auteurs(nom, prenom), titre, prix, pages, ISBN13, edWeb, edNom)
- *
- */
-function atl_aff_livre($livre) {
-    // Le nom de l'auteur doit être encodé avec urlencode() avant d'être placé dans une URL, sans être passé auparavant par htmlentities()
-    $auteurs = $livre['auteurs'];
-    $livre = at_html_proteger_sortie($livre);
-    echo '<h2>Informations</h2>',
-    '<article class="arRecherche">', 
-    '<a class="addToCart" href="',$_SERVER['REQUEST_URI'],'&amp;action=add" title="Ajouter au panier"></a>',
-    '<a class="addToWishlist"  href="',$_SERVER['REQUEST_URI'],'&amp;action=addW" title="Ajouter à la liste de cadeaux"></a>',
-    '<a href="details.php?article=', $livre['id'], '" title="Voir détails"><img src="../images/livres/', $livre['id'], '_mini.jpg" alt="', 
-    $livre['titre'],'"></a>',
-    '<h5>', $livre['titre'], '</h5>',
-    'Ecrit par : ';
-    $i = 0;
-    foreach ($auteurs as $auteur) {
-        echo $i > 0 ? ', ' : '', '<a href="recherche.php?type=auteur&amp;quoi=', urlencode($auteur['nom']), '">',
-        at_html_proteger_sortie($auteur['prenom']), ' ', at_html_proteger_sortie($auteur['nom']) ,'</a>';
-        $i++;
-    }
-    echo    '<br>Editeur : <a class="lienExterne" href="http://', trim($livre['edWeb']), '" target="_blank">', $livre['edNom'], '</a><br>',
-            'Prix : ', $livre['prix'], ' &euro;<br>',
-            'Pages : ', $livre['pages'], '<br>',
-            'ISBN13 : ', $livre['ISBN13'], '<br>',
-            '</article>','<br>',
-            '<h2>Résumé</h2>',
-            '<p><em>',(!empty($livre['resume']))?$livre['resume']:"Résumé à venir",'</em></p>';
-}
 
+/**
+ *  Contenu de la page : Livre correspondant à l'id et ses informations
+ *
+ * @param array  $recherche     critères de recherche (type et quoi)
+ * @param array  $erreurs       erreurs détectées dans l'URL
+ */
 function atl_aff_contenu($id,$erreurs){
     $bd = at_bd_connecter();
     $sql =  "SELECT liID, liTitre, liPrix, liPages, liISBN13, liResume, edNom, edWeb, auNom, auPrenom 
@@ -101,7 +89,9 @@ function atl_aff_contenu($id,$erreurs){
         }       
     }
 
+    //Si aucun livre ne correspond à l'id, un erreur est affichée
     if(empty($livre)){
+        // libération des ressources
         mysqli_free_result($res);
         mysqli_close($bd);
         $erreurs[] = '- Aucun livre ne correspond à l\'article saisie.';
@@ -113,8 +103,6 @@ function atl_aff_contenu($id,$erreurs){
         atl_get_action($livre,$bd);
     }
     if ($erreurs) {
-        mysqli_free_result($res);
-        mysqli_close($bd);
         $nbErr = count($erreurs);
         $pluriel = $nbErr > 1 ? 's':'';
         echo '<p class="error">',
@@ -132,6 +120,12 @@ function atl_aff_contenu($id,$erreurs){
     mysqli_close($bd);
 }
 
+/**
+ * Fonction permettant les actions d'ajout au panier et d'ajout à la wishlist
+ * 
+ * @param array   $livre   Le livre à ajouter
+ * @param object  $bd      Lien vers la BD
+ */
 function atl_get_action($livre,$bd){
     //Ajout dans le panier
     if(at_creation_panier() && isset($_GET['action']) && $_GET['action']==="add"){
@@ -142,5 +136,38 @@ function atl_get_action($livre,$bd){
     if(isset($_GET['action']) && $_GET['action']==="addW"){
         at_ajouter_wishlist($bd,$livre['id'],'./',array('article'));
     }
+}
+
+/**
+ *  Affichage d'un livre.
+ *
+ *  @param  array       $livre      tableau associatif des infos sur un livre (id, auteurs(nom, prenom), titre, prix, pages, ISBN13, edWeb, edNom)
+ *
+ */
+function atl_aff_livre($livre) {
+    // Le nom de l'auteur doit être encodé avec urlencode() avant d'être placé dans une URL, sans être passé auparavant par htmlentities()
+    $auteurs = $livre['auteurs'];
+    $livre = at_html_proteger_sortie($livre);
+    echo '<h2>Informations</h2>',
+    '<article class="arRecherche">', 
+    '<a class="addToCart" href="',$_SERVER['REQUEST_URI'],'&amp;action=add" title="Ajouter au panier"></a>',
+    '<a class="addToWishlist"  href="',$_SERVER['REQUEST_URI'],'&amp;action=addW" title="Ajouter à la liste de cadeaux"></a>',
+    '<a href="details.php?article=', $livre['id'], '" title="Voir détails"><img src="../images/livres/', $livre['id'], '_mini.jpg" alt="', 
+    $livre['titre'],'"></a>',
+    '<h5>', $livre['titre'], '</h5>',
+    'Ecrit par : ';
+    $i = 0;
+    foreach ($auteurs as $auteur) {
+        echo $i > 0 ? ', ' : '', '<a href="recherche.php?type=auteur&amp;quoi=', urlencode($auteur['nom']), '">',
+        at_html_proteger_sortie($auteur['prenom']), ' ', at_html_proteger_sortie($auteur['nom']) ,'</a>';
+        $i++;
+    }
+    echo    '<br>Editeur : <a class="lienExterne" href="http://', trim($livre['edWeb']), '" target="_blank">', $livre['edNom'], '</a><br>',
+            'Prix : ', $livre['prix'], ' &euro;<br>',
+            'Pages : ', $livre['pages'], '<br>',
+            'ISBN13 : ', $livre['ISBN13'], '<br>',
+            '</article>','<br>',
+            '<h2>Résumé</h2>',
+            '<p><em>',(!empty($livre['resume']))?$livre['resume']:"Résumé à venir",'</em></p>';
 }
 ?>

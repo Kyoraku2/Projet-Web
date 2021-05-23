@@ -1,5 +1,12 @@
 <?php
 
+/* ------------------------------------------------------------------------------
+    Architecture de la page
+    - étape 1 : vérification des paramètres reçus dans l'URL
+    - étape 2 : génération du code HTML de la page
+------------------------------------------------------------------------------*/
+
+
 ob_start(); //démarre la bufferisation
 session_start();
 
@@ -7,6 +14,11 @@ require_once '../php/bibli_generale.php';
 require_once '../php/bibli_bookshop.php';
 
 error_reporting(E_ALL); // toutes les erreurs sont capturées (utile lors de la phase de développement)
+
+/*------------------------- Etape 1 --------------------------------------------
+- vérification des paramètres reçus dans l'URL
+------------------------------------------------------------------------------*/
+
 
 // erreurs détectées dans l'URL
 $erreurs = array();
@@ -41,6 +53,10 @@ if ($_GET){ // s'il y a des paramètres dans l'URL
     }
 }
 
+/*------------------------- Etape 2 --------------------------------------------
+- génération du code HTML de la page
+------------------------------------------------------------------------------*/
+
 
 at_aff_debut('BookShop | Liste', '../styles/bookshop.css', 'main');
 
@@ -55,6 +71,15 @@ at_aff_fin('main');
 // fin du script --> envoi de la page 
 ob_end_flush();
 
+
+// ----------  Fonctions locales au script ----------- //
+
+/**
+ *  Contenu de la page : formulaire et résultats de la recherche
+ *
+ * @param array  $recherche     critères de recherche (type et quoi)
+ * @param array  $erreurs       erreurs détectées dans l'URL
+ */
 function atl_aff_contenu($recherche,$erreurs){
     if(!at_est_authentifie()){
         echo '<h3>Vous devez vous identidier pour pouvoir accéder à votre liste de souhait(s)<br>
@@ -73,9 +98,11 @@ function atl_aff_contenu($recherche,$erreurs){
                                                             // lors de la soumission du formulaire
             '</p>', 
           '</form>';
+    
     if(isset($_GET['quoi'])){
         echo '<p><a href="',strtok($_SERVER['REQUEST_URI'],"?"),'" title="Aller à ma liste de souhait">Ma liste de souhait</a></p>';
     }
+
     if ($erreurs) {
         $nbErr = count($erreurs);
         $pluriel = $nbErr > 1 ? 's':'';
@@ -87,6 +114,7 @@ function atl_aff_contenu($recherche,$erreurs){
         echo '</p>';
         return; // ===> Fin de la fonction
     }
+
     if(isset($_GET['quoi'])){
         echo '<h3>Liste de souhaits correspondant à l\'adresse mail saisie :</h3>';
         $mail=at_bd_proteger_entree($bd,$recherche['quoi']);
@@ -111,6 +139,7 @@ function atl_aff_contenu($recherche,$erreurs){
         AND cliID=listIDClient
         AND cliID=$id";
     }
+
     $res = mysqli_query($bd, $sql) or at_bd_erreur($bd,$sql);
     $livres=array();
     $lastID = -1;
@@ -134,6 +163,7 @@ function atl_aff_contenu($recherche,$erreurs){
             $livre['auteurs'][] = array('prenom' => $t['auPrenom'], 'nom' => $t['auNom']);
         }
     }
+
     if ($lastID != -1) {
         atl_aff_livre($livre,$recherche);
         $livres[] = $livre;
@@ -144,21 +174,31 @@ function atl_aff_contenu($recherche,$erreurs){
         mysqli_close($bd);
         return;
     }
+
     // libération des ressources
     mysqli_free_result($res);
+
     if(!isset($_GET['quoi'])){
         echo '<div style="width: 15%; margin:1em auto;">',
         '<a href="'.$_SERVER['REQUEST_URI'],'?action=resetW&id=',$livre['id'],'" title="Vider la liste">Vider</a>',
         '</div>';
     }
+    
     atl_get_action($livres,$bd,$recherche);
     mysqli_close($bd);
 }
 
-function atl_get_action($livres,$bd,$recherche){
+/**
+ * Fonction permettant les actions d'ajout au panier, d'ajout à la wishlist et de suppression de la liste de souhait
+ * 
+ * @param array   $livre   Le livre à ajouter
+ * @param object  $bd      Lien vers la BD
+ */
+function atl_get_action($livres,$bd){
     //Add to crate
     if(at_creation_panier() && isset($_GET['action']) && isset($_GET['id']) && $_GET['action']==="add" && at_est_entier($_GET['id'])){
-        //récupération du prix pour éviter les fraudes (impossible de placer prix dans la queryString)
+        //Ici : récupération du prix dans lme tableau contenant tous les livres pour éviter les fraudes 
+        //(impossible de placer prix dans la queryString, sinon il serait modifiable)
         $id=-1;
         $size=count($livres);
         

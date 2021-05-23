@@ -20,9 +20,13 @@ at_aff_fin('main');
 
 ob_end_flush();
 
+/** 
+ * Permet l'affichage du contenu de la page
+*/
 function atl_aff_contenu(){
     echo '<h1>A propos de bookshop</h1>',
-    '<p>Franchement on est sympa et le site est cool.</p>';
+    '<h2>Notre entreprise</h2>',
+    '<p>Tout ce qu\'il y a plus haut ça veut rien dire. mais vous en faites pas c\'est sympa par ici.<span class=font6>(vraiment en plus c\'est pas un mensonge)</span></p>';
 }
 
 ?>

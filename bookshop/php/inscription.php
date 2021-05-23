@@ -82,6 +82,8 @@ function atl_aff_contenu($err) {
     echo    
         '<p>Pour vous inscrire, merci de fournir les informations suivantes. </p>',
         '<form method="post" action="inscription.php">';
+        //Si l'utilisateur vient de login.php, il est redirigé vers la page qui l'a guider à login.php
+        //Si la page l'y ayant dirigé est inscription.php, il est redirigé vers index.php
         if(isset($_POST['destination'])){
             $page=$_POST['destination'];
         }else{

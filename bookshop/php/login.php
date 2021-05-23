@@ -1,7 +1,7 @@
 <?php
 /* ------------------------------------------------------------------------------
     Architecture de la page
-    - étape 1 : vérifications diverses et traitement des soumissions
+    - étape 1 : vérifications diverses
     - étape 2 : génération du code HTML de la page
 ------------------------------------------------------------------------------*/
 
@@ -17,7 +17,7 @@ error_reporting(E_ALL); // toutes les erreurs sont capturées (utile lors de la 
 $err = isset($_POST['btnConnect']) ? atl_traitement_connexion() : array(); 
 
 /*------------------------- Etape 1 --------------------------------------------
-- vérifications diverses et traitement des soumissions
+- vérifications diverses
 ------------------------------------------------------------------------------*/
 
 // si utilisateur déjà authentifié, on le redirige vers la page index.php
@@ -43,6 +43,15 @@ at_aff_fin('main');
 
 ob_end_flush();
 
+
+// ----------  Fonctions locales du script ----------- //
+
+/**
+ * Affichage du contenu de la page (formulaire de connexion)
+ *
+ * @param   array   $err    tableau d'erreurs à afficher
+ * @global  array   $_POST
+ */
 function atl_aff_contenu($err) {
     // réaffichage des données soumises en cas d'erreur, sauf les mots de passe
     $email = isset($_POST['email']) ? at_html_proteger_sortie(trim($_POST['email'])) : '';
@@ -91,6 +100,23 @@ function atl_aff_contenu($err) {
         ;
 }
 
+
+/**
+ *  Traitement de la connexion 
+ *
+ *      Etape 1. vérification de la validité des données
+ *                  -> return des erreurs si on en trouve
+ *      Etape 2. identification de la session
+ *
+ * Toutes les erreurs détectées qui nécessitent une modification du code HTML sont considérées comme des tentatives de piratage 
+ * et donc entraînent l'appel de la fonction at_session_exit() sauf les éventuelles suppressions des attributs required 
+ * car l'attribut required est une nouveauté apparue dans la version HTML5 et nous souhaitons que l'application fonctionne également 
+ * correctement sur les vieux navigateurs qui ne supportent pas encore HTML5
+ *
+ * @global array    $_POST
+ *
+ * @return array    tableau assosiatif contenant les erreurs
+ */
 function atl_traitement_connexion() {
     if( !at_parametres_controle('post', array('email','passe','btnConnect','destination'))) {
         at_session_exit();  

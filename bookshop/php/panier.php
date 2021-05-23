@@ -21,6 +21,14 @@ at_aff_fin('main');
 
 ob_end_flush();
 
+
+// ----------  Fonctions locales au script ----------- //
+
+/**
+ *  Affiche les livres contenus dans le panier de session
+ *  Possibilité de valider son panier => redirection vers validate.php
+ *  Et de vider son panier
+ */
 function atl_aff_contenu(){
     if(at_creation_panier()){
         $nb_articles=at_compter_articles();
@@ -84,6 +92,7 @@ function atl_aff_contenu(){
         //Montant total
         echo '<hr>','<h3>Sous-total : ',at_montant_global(),' &euro;</h3>';
 
+        //Boutons reset/validation
         echo '<div style="width: 25%; margin:0 auto;">',
         '<a href="',$_SERVER['REQUEST_URI'],'?action=validate" title="Valider le panier">Valider</a>',
         '<a href="',$_SERVER['REQUEST_URI'],'?action=reset" title="Vider le panier">Vider</a></div>';
@@ -92,12 +101,13 @@ function atl_aff_contenu(){
     }
 }
 
-function atl_panier_action($bd){
+/**
+ * Fonction permettant les actions de suppression, de modification de quantité, de validation du panier
+ */
+function atl_panier_action(){
     //Retrait du panier
     if(isset($_GET['action']) && $_GET['action']==="delete"){
         at_supprimer_article($_GET['id']);
-        unset($_GET['action']);
-        unset($_GET['id']);
         $url=strtok($_SERVER["REQUEST_URI"], '?');
         header("Location: $url");
         exit();
@@ -106,9 +116,6 @@ function atl_panier_action($bd){
     //Modifier quantité
     if(isset($_GET['action']) && isset($_GET['qte']) && isset($_GET['id']) && at_est_entier($_GET['id']) && at_est_entier($_GET['qte']) &&  $_GET['action']==="change"){
         at_modifier_qte_article($_GET['id'],$_GET['qte']);
-        unset($_GET['action']);
-        unset($_GET['id']);
-        unset($_GET['qte']);
         $url=strtok($_SERVER["REQUEST_URI"], '?');
         header("Location: $url");
         exit();
@@ -117,7 +124,6 @@ function atl_panier_action($bd){
     //Vider le panier
     if(isset($_GET['action']) && $_GET['action']==="reset"){
         at_supprime_panier();
-        unset($_GET['action']);
         $url=strtok($_SERVER["REQUEST_URI"], '?');
         header("Location: $url");
         exit();
@@ -126,7 +132,6 @@ function atl_panier_action($bd){
     //Valider panier
     if(isset($_GET['action']) && $_GET['action']==="validate"){
         if(!at_est_authentifie()){
-            unset($_GET['action']);
             header("Location: ./login.php");
             exit();
         }
@@ -135,6 +140,12 @@ function atl_panier_action($bd){
     }
 }
 
+/**
+ *  Affichage d'un livre.
+ *
+ *  @param  array       $livre      tableau associatif des infos sur un livre (id, auteurs(nom, prenom), titre, prix, pages, ISBN13, edWeb, edNom)
+ *
+ */
 function atl_aff_livre($livre) {
     // Le nom de l'auteur doit être encodé avec urlencode() avant d'être placé dans une URL, sans être passé auparavant par htmlentities()
     $auteurs = $livre['auteurs'];
@@ -163,10 +174,5 @@ function atl_aff_livre($livre) {
             '<br><h5>Prix total pour cet article : ',at_montant($livre['id']),' &euro;</h5>',
         '</article>';
 }
-
-//Gérer la validation des paramètres
-//protéger entrée/sortie
-//Gérer les condition : si id pas dans array, erreur
-//Gérer la validation du panier
 
 ?>

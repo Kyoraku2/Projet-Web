@@ -19,7 +19,14 @@ at_aff_fin('main');
 
 ob_end_flush();
 
+/**
+ * Permet l'affichage du contenu de la page
+ *  - L'utilisateur est redirigé si il n'est pas identifié
+ *  - Récupération des toutes les commandes associées à l'utilisateur identifié cette fois
+ *  - Affichage sous forme de listes déroulantes (voir css pour le fonctionnement)
+ */
 function atl_aff_contenu(){
+    //Redirection
     if(!at_est_authentifie()){
         echo '<h3>Vous devez vous identidier pour pouvoir accéder à votre liste de commande(s)<br>
         Vous allez être redirigé vers la page de connexion dans 5 secondes</h3>',
@@ -41,6 +48,9 @@ function atl_aff_contenu(){
     AND coIDClient=$id";
     $res = mysqli_query($bd, $sql) or at_bd_erreur($bd,$sql);
 
+    //Dans un premier temps, construction d'un tableau contenant n "cases vides"
+    //n étant le nombre de commandes
+    //Auquel sont ajoutées des commandes contenant uniquement date et heure
     $all_commands=array();
     $lastBookID = -1;
     $lastCmdID = -1;
@@ -60,6 +70,7 @@ function atl_aff_contenu(){
 
     mysqli_data_seek($res,0);
 
+    //Remplissage des commande dans un second temps
     $lastCmdID=-1;
     while($t = mysqli_fetch_assoc($res)){
         if ($t['liID'] != $lastBookID) {
@@ -97,6 +108,7 @@ function atl_aff_contenu(){
         return;
     }
     $i=0;
+    //Affichage de toutes les commandes
     foreach($all_commands as $c){
         $i++;
         $prix_total=0;
@@ -122,6 +134,12 @@ function atl_aff_contenu(){
     }
 }
 
+/**
+ *  Affichage d'un livre.
+ *
+ *  @param  array       $livre      tableau associatif des infos sur un livre (id, auteurs(nom, prenom), titre, prix, pages, ISBN13, edWeb, edNom)
+ *
+ */
 function atl_aff_livre($livre,$prix_ligne) {
     // Le nom de l'auteur doit être encodé avec urlencode() avant d'être placé dans une URL, sans être passé auparavant par htmlentities()
     $auteurs = $livre['auteurs'];

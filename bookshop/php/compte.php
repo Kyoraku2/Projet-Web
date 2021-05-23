@@ -1,8 +1,8 @@
 <?php
 /* ------------------------------------------------------------------------------
     Architecture de la page
-    - étape 1 : vérifications diverses et traitement des soumissions
-    - étape 2 : génération du code HTML de la page
+    - étape 1 : vérifications diverses
+    - étape 2 : traitement et génération du code HTML de la page
 ------------------------------------------------------------------------------*/
 
 ob_start(); //démarre la bufferisation
@@ -14,7 +14,7 @@ require_once 'bibli_bookshop.php';
 error_reporting(E_ALL); // toutes les erreurs sont capturées (utile lors de la phase de développement)
 
 /*------------------------- Etape 1 --------------------------------------------
-- vérifications diverses et traitement des soumissions
+- vérifications diverses
 ------------------------------------------------------------------------------*/
 if (!at_est_authentifie()){
     $page = isset($_POST['destination']) ? $_POST['destination'] : '../index.php';
@@ -22,7 +22,7 @@ if (!at_est_authentifie()){
     exit();
 }
 /*------------------------- Etape 2 --------------------------------------------
-- génération du code HTML de la page
+- traitement et génération du code HTML de la page
 ------------------------------------------------------------------------------*/
 /**
  * Connexion à la base de données et requête sql pour récupérer tous les informations sur tous les clients
@@ -106,13 +106,13 @@ function atl_aff_contenu($canModify,$t,$err){
         echo '<form method="post" action="compte.php">',
             '<table>';
         at_aff_ligne_input('Email :', array('type' => 'email', 'name' => 'email', 'value' => $email, 'required' => false));
-        at_aff_ligne_input('Nouveau mot de passe (laisser vide si pas de modification) :', array('type' => 'password', 'name' => 'newpass', 'value' => ''));
+        at_aff_ligne_input('Nouveau mot de passe :', array('type' => 'password', 'name' => 'newpass', 'value' => ''));
         at_aff_ligne_input('Nom et prénom :', array('type' => 'text', 'name' => 'nomprenom', 'value' => $nomprenom, 'required' => false));
         at_aff_ligne_input('Adresse :', array('type' => 'text', 'name' => 'adresse', 'value' => $adresse));
         at_aff_ligne_input('Ville :', array('type' => 'text', 'name' => 'ville', 'value' => $ville));
         at_aff_ligne_input('Code Postal :', array('type' => 'number', 'name' => 'codePostal', 'value' => $codePostal));
         at_aff_ligne_input('Pays :', array('type' => 'text', 'name' => 'pays', 'value' => $pays));
-        at_aff_ligne_input('Rentrez votre mot de passe actuel :', array('type' => 'password', 'name' => 'currpass', 'value' => '', 'required' => false));        
+        at_aff_ligne_input('Mot de passe actuel :', array('type' => 'password', 'name' => 'currpass', 'value' => '', 'required' => false));        
         echo '<tr>',
         '<td colspan="2">
         <input type="submit" name="modif" value="Valider">',

@@ -17,8 +17,11 @@ at_aff_pied('../');
 
 at_aff_fin('main');
 
+/** 
+ * Permet l'affichage du contenu de la page
+*/
 function atl_aff_contenu(){
     echo '<h1>Conditions d\'utilisation</h1>',
-    '<p>Les attaques XSS ça nous connaît, vous nous aurez pas comme ça.</p>';
+    '<p>Les attaques XSS ça nous connaît, vous nous aurez pas comme ça.<span class=font6>(L\'expérience tout ça tout ça...)</span></p>';
 }
 ?>

@@ -1,7 +1,7 @@
 <?php
 require_once('./bibli_bookshop.php');
 
-// d�marrage de la session, pas besoin de d�marrer la bufferisation des sorties
+// démarrage de la session, pas besoin de démarrer la bufferisation des sorties
 session_start();
 
 at_session_exit(isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : '../index.php');

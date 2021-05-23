@@ -21,10 +21,10 @@ at_aff_fin('main');
 
 ob_end_flush();
 
+/**
+ *  Contenu de la page : Récapitulatif de commande, bouton de redirection
+ */
 function atl_aff_contenu(){
-    echo '<h1>Merci pour votre achat !</h1>',
-        '<h2>Récapitulatif</h2>';
-
     if(at_creation_panier()){
         if(at_compter_articles()==0){
             header('Location: ../index.php');
@@ -32,22 +32,55 @@ function atl_aff_contenu(){
         }
         // ouverture de la connexion, requête
         $bd = at_bd_connecter();
+        
+        $id_cmd=atl_valider_commande($bd);
+
+        $id=at_bd_proteger_entree($bd,$_SESSION['id']);
+        $id_cmd=at_bd_proteger_entree($bd,$id_cmd);
+        /*
+        //Vérification de l'adresse de livraison
+        $sql="SELECT cliID,cliAdresse
+        FROM clients
+        WHERE cliID = $id";
     
-        $sql =  "SELECT liID, liTitre, liPrix, liPages, liISBN13, liResume, edNom, edWeb, auNom, auPrenom 
-        FROM livres,editeurs,aut_livre,auteurs
-        WHERE al_IDAuteur = auID
-        AND al_IDLivre = liID 
-        AND liIDEditeur = edID";
-        
-        $sql.= " AND liID IN (";
-        foreach($_SESSION['panier']['idProd'] as $id){
-            $id=at_bd_proteger_entree($bd,$id); 
-            $sql.="$id,";
+        $res = mysqli_query($bd,$sql) or at_bd_erreur($bd,$sql);
+    
+        if(mysqli_num_rows($res) == 0) {
+            echo 'Vous n\'avez pas renseigné votre adresse de livraison !';
+            mysqli_free_result($res);
+            return;
         }
-        $sql=substr($sql, 0, -1);
-        $sql.=')';
-        
+        $row=mysqli_fetch_assoc($res);
+        if(empty(trim($row['cliAdresse']))){
+            echo '<p class="error">Vous n\'avez pas renseigné votre adresse de livraison.
+            <br>Cliquez <a href="./compte.php" title="Accès à la page compte">ici</a> pour la renseigner.</p>';
+            mysqli_free_result($res);
+            return;
+        }
+        mysqli_free_result($res);
+        */
+        echo '<h1>Merci pour votre achat !</h1>',
+        '<h2>Récapitulatif</h2>';
+
+        $sql =  "SELECT coID,coIDClient,coDate,coHeure,ccIDCommande,ccQuantite,liID, liTitre, liPrix, liPages, liISBN13, edNom, edWeb, auNom, auPrenom 
+        FROM commandes,compo_commande,livres,auteurs,aut_livre,editeurs,clients
+        WHERE coID=ccIDCommande 
+        AND ccIDLivre=liID 
+        AND liIDEditeur = edID
+        AND al_IDLivre = liID
+        AND al_IDAuteur = auID
+        AND cliID=coIDClient
+        AND coIDClient=$id
+        AND coID=$id_cmd";
+
         $res = mysqli_query($bd, $sql) or at_bd_erreur($bd,$sql);
+        
+        if(mysqli_num_rows($res) == 0) {
+            echo '<p class="error">Vous n\'avez pas renseigné votre adresse de livraison.
+            <br>Cliquez <a href="./compte.php" title="Accès à la page compte">ici</a> pour la renseigner.</p>';
+            mysqli_free_result($res);
+            return;
+        }
     
         $lastID = -1;
         while ($t = mysqli_fetch_assoc($res)) {
@@ -70,22 +103,27 @@ function atl_aff_contenu(){
             }
         }
         // libération des ressources
+        mysqli_close($bd);
+        mysqli_free_result($res);
         if ($lastID != -1) {
             atl_aff_livre($livre); 
-            mysqli_free_result($res);
-        }else{
-            mysqli_free_result($res);
         }
+
         $montant=at_montant_global();
-        atl_valider_commande($bd);
-        mysqli_close($bd);
         echo '<h3>Sous-total : ',$montant,' &euro;</h3>',
         '<div style="width: 15%; margin:1em auto;">',
         '<p><a href="../index.php" title="Retour vers index">Retour</a></p>',
         '</div>';
+        at_supprime_panier();
     }
 }
 
+/**
+ *  Affichage d'un livre.
+ *
+ *  @param  array       $livre      tableau associatif des infos sur un livre (id, auteurs(nom, prenom), titre, prix, pages, ISBN13, edWeb, edNom)
+ *
+ */
 function atl_aff_livre($livre) {
     // Le nom de l'auteur doit être encodé avec urlencode() avant d'être placé dans une URL, sans être passé auparavant par htmlentities()
     $auteurs = $livre['auteurs'];
@@ -111,40 +149,27 @@ function atl_aff_livre($livre) {
         '</article>';
 }
 
-
+/**
+ * Validation de commande : 
+ * - envoie de la commande à la BD
+ * 
+ * @param object  $bd   Lien vers la BD
+ */
 function atl_valider_commande($bd){
-    //Valider le panier
     if(!at_est_authentifie()){
         header("Location: ./login.php");
         exit();
     }
-    $id=$_SESSION['id'];//at_bd_proteger_entree($bd, $_SESSION['id']);
-    $sql="SELECT cliID,cliAdresse
-    FROM clients
-    WHERE cliID = $id";
 
-    $res = mysqli_query($bd,$sql) or at_bd_erreur($bd,$sql);
-
-    if(mysqli_num_rows($res) == 0) {
-        echo 'Vous n\'avez pas renseigné votre adresse de livraison !';
-        mysqli_free_result($res);
-        return;
-    }
-    $row=mysqli_fetch_assoc($res);
-    if(empty(trim($row['cliAdresse']))){
-        echo '<p class="error">Vous n\'avez pas renseigné votre adresse de livraison.
-        <br>Cliquez <a href="./compte.php" title="Accès à la page compte">ici</a> pour la renseigner.</p>';
-        mysqli_free_result($res);
-        return;
-    }
-    mysqli_free_result($res);
     $id=at_bd_proteger_entree($bd,$_SESSION['id']);
     $date=date("Ymd");
     $date=at_bd_proteger_entree($bd,$date);
     $hour=date("Hi");
     $hour=at_bd_proteger_entree($bd,$hour);
+
     $sql="INSERT INTO `commandes` (`coIDClient`, `coDate`, `coHeure`) VALUES
-    ($id,$date,$hour)";
+    ($id,$date,$hour)
+    SELECT * WHERE EXISTS (SELECT * FROM clients WHERE cliID=$id AND cliAdresse is not null and cliAdresse!='')";
 
     $res = mysqli_query($bd,$sql) or at_bd_erreur($bd,$sql);
     $id_cmd=mysqli_insert_id($bd);
@@ -156,7 +181,6 @@ function atl_valider_commande($bd){
     }
     $sql=mb_substr($sql, 0, -1);
     $res = mysqli_query($bd,$sql) or at_bd_erreur($bd,$sql);
-
-    at_supprime_panier();
+    return $id_cmd;
 }
 ?>

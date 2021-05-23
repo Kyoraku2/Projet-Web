@@ -181,17 +181,24 @@ function atl_aff_section_livres($num, $tLivres) {
     echo '</section>';
 }
 
+/*README
+Pour ce qui est de l'ajout dans le panier ou dans la wishlist, nous passons certaines infos dans la querystring
+via $_GET.
+Rien de dangereux, seulement l'id du livre et l'action effectuée (les actions en question peuvent différer selon les pages)
+Le prix du livre n'est donc pas modifiable par l'utilisateur etc...
+La seul chose que ce dernier peut faire en manipulant la querystring c'est ajouter/supprimer/modifier la quantité manuellement
+en saisissant les couples correspondant dans la querystring sur une page donnée. Cela ne réprensente donc aucunement un danger,
+toutes les vérifications concernant les valeurs étant faites.
+
+*/
+
 //TODO :
 
 /*** Important
- Rien je crois
+ - l'adresse dans compte
 ***/
 
 /*** Modification avant rendu 
  - urlencode pour url?cle=urlencore(blabla)
- - http://www.site.com/forum.php?id=<script>...</script>
- - exit après chaque header
- - Optimiser un maximum les requêtes sql (panier et listes)
- - Vérification des étapes de bd sur toutes les pages/toutes les requêtes: ouverture, recupération, libération, fermeture 
 ***/
 ?>

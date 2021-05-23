@@ -7,6 +7,8 @@ require_once '../php/bibli_generale.php';
 require_once '../php/bibli_bookshop.php';
 
 error_reporting(E_ALL);
+
+//Si les informations concernant le livre ajouté ne sont pas dans la variable de session, l'utilisateur est retourné vers la page d'acceuil
 if(!isset($_SESSION['tmpidlivre']) || !isset($_SESSION['tmptype']) || !isset($_SESSION['tmpback'])){
     header('Location: ../index.php');
     exit();
@@ -26,6 +28,13 @@ at_aff_fin('main');
 ob_end_flush();
 
 
+/**
+ * Permet l'affichage du contenu de la page
+ *  - Le livre correspondant aux informations est récupéré dans la bd
+ *  - Il est affiché accompagné d'un message de validation
+ *  - Deux liens guide l'utilisateur soit vers la panier, soit vers la page d'où il vient
+ *  - Les variables de session temporaires sont supprimées 
+ */
 function atl_aff_contenu(){
     // ouverture de la connexion, requête
     $bd = at_bd_connecter();
@@ -37,6 +46,7 @@ function atl_aff_contenu(){
             WHERE liID=$id";
 
     $res = mysqli_query($bd, $sql) or at_bd_erreur($bd,$sql);
+    //Si aucun résultat, suppression et redirection
     if(mysqli_num_rows($res)===0){
         $tmp=$_SESSION['tmpback'];
         unset($_SESSION['tmpback']);
@@ -68,24 +78,25 @@ function atl_aff_contenu(){
 
     echo '<h1>Validation d\'ajout</h1>',
     '<p>L\'article suivant à bien été ajouté à votre ',($_SESSION['tmptype']==='cart')?'panier':'liste de souhait(s)',' :</p>';
-    if ($lastID === -1) {
-        echo '<p>Aucun livre trouvé</p>';
-        unset($_SESSION['tmpback']);
-        unset($_SESSION['tmpidlivre']);
-        unset($_SESSION['tmptype']);
-        return;
-    }
     atl_aff_livre($livre);
     echo '<div style="width: 25%; margin:1em auto;">',
     '<a href="',($_SESSION['tmptype']==='cart')?'./panier.php':'./liste.php','" title="',($_SESSION['tmptype']==='cart')?'Aller vers le Panier':'Aller vers la Liste de souhait(s)','">',($_SESSION['tmptype']==='cart')?'Panier':'Souhaits','</a>',
     '<a href="',$_SESSION['tmpback'],'" title="Retour à la page précédente">Retour</a>',
     '</div>';
     
+    //Suppression des variables temporaires
     unset($_SESSION['tmpback']);
     unset($_SESSION['tmpidlivre']);
     unset($_SESSION['tmptype']);
 }
 
+
+/**
+ *  Affichage d'un livre.
+ *
+ *  @param  array       $livre      tableau associatif des infos sur un livre (id, auteurs(nom, prenom), titre, prix, pages, ISBN13, edWeb, edNom)
+ *
+ */
 function atl_aff_livre($livre) {
     // Le nom de l'auteur doit être encodé avec urlencode() avant d'être placé dans une URL, sans être passé auparavant par htmlentities()
     $auteurs = $livre['auteurs'];
