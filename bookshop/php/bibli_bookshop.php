@@ -147,6 +147,10 @@ function at_session_exit($page = '../index.php') {
  * Fonction permettant de créer un panier
  * La panier sera contenu dans la variable de session, ne nécessitant pas d'être connecté
  * pour pouvoir le remplir, vider, modifier
+ * Ici nous gardons pour chaque articles : id, quantité et prix en mémoire
+ * 
+ * Amélioration possible : garder simplement un livre en mémoire => pas besoin de requête sql pour l'affichage dans le panier.php/added.php. 
+ *
  * 
  * @return boolean Si le panier n'existe pas il est créé puis true est retourné, si il existe la fonction retourne simplement true
  *

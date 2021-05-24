@@ -63,6 +63,7 @@ function atl_aff_contenu(){
         $id_cmd=atl_valider_commande($bd);
         $id_cmd=at_bd_proteger_entree($bd,$id_cmd);
 
+        //Récapitulatif
         echo '<h1>Merci pour votre achat !</h1>',
         '<h2>Récapitulatif</h2>';
 

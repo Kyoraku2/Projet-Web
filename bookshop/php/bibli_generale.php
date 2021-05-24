@@ -410,4 +410,19 @@ function at_aff_ligne_input($libelle, $attributs = array(), $prefix_id = 'text')
     echo '></td></tr>';
 }
 
+/**
+ * Test et affichage du résultat d'une expression régulière
+ *
+ * @param string    $exp    Expression régulière
+ * @param string    $txt    Texte sur lequel appliquer l'expression
+ */
+function at_testerExp($exp, $txt) {
+    // on découpe le texte suivant l'expression régulière
+    $t = preg_split($exp, $txt);
+    if(count($t)===0){
+        return false;
+    }
+    return true;
+}
+
 ?>

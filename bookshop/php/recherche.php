@@ -199,7 +199,7 @@ function atl_aff_contenu($recherche, $erreurs) {
  * @param object  $bd      Lien vers la BD
  */
 function atl_get_action($livres,$bd,$recherche){
-    //Add to crate
+    //Add to cart
     if(at_creation_panier() && isset($_GET['action']) && isset($_GET['id']) && $_GET['action']==="add" && at_est_entier($_GET['id'])){
         //Ici : récupération du prix dans lme tableau contenant tous les livres pour éviter les fraudes 
         //(impossible de placer prix dans la queryString, sinon il serait modifiable)

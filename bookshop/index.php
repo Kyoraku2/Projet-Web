@@ -34,18 +34,19 @@ function atl_aff_contenu() {
         
         '<p>Nouveau venu sur BookShop ? Consultez notre <a href="./php/presentation.php">page de présentation</a> !</p>';
 
+    //Dernière nouveautés
     $sql = "SELECT liID, liTitre, auNom, auPrenom, liPrix
     FROM livres INNER JOIN aut_livre ON al_IDLivre = liID 
                 INNER JOIN auteurs ON al_IDAuteur = auID 
-    ORDER BY liID DESC LIMIT 8";
+    ORDER BY liID DESC";
 
-    $sql2 = "SELECT ccIDLivre, liTitre, auNom, auPrenom, liPrix
+    //Top des ventes
+    $sql2 = "SELECT ccIDLivre, liTitre, auNom, auPrenom, liPrix, SUM(ccQuantite) as somme
     FROM compo_commande INNER JOIN livres ON ccIDLIVRE = liID
                         INNER JOIN aut_livre ON al_IDLivre = liID 
                         INNER JOIN auteurs ON al_IDAuteur = auID
     GROUP BY ccIDLivre, auNOM, auPrenom
-    ORDER BY SUM(ccQuantite) DESC,ccIDLivre
-    LIMIT 8";
+    ORDER BY somme DESC,ccIDLivre";
 
     $bd=at_bd_connecter();
 
@@ -55,7 +56,7 @@ function atl_aff_contenu() {
     $tLivres = array();
     $i=0;
     $lastID = -1;
-    
+    //Récupération des nouveautés
     while (($t = mysqli_fetch_assoc($res)) && $i<4) {
         if ($t['liID'] != $lastID) {
             if ($lastID != -1) {
@@ -83,7 +84,7 @@ function atl_aff_contenu() {
     $i=0;
 
     $res = mysqli_query($bd, $sql2) or at_bd_erreur($bd,$sql2);
-
+    //Récupération du top des ventes
     while (($t = mysqli_fetch_assoc($res)) && $i<4) {
         if ($t['ccIDLivre'] != $lastID) {
             if ($lastID != -1) {
@@ -120,9 +121,10 @@ function atl_aff_contenu() {
 }
 
 function atl_get_action($all_books,$bd){
-    //Add to crate
+    //Add to cart
     if(at_creation_panier() && isset($_GET['action']) && isset($_GET['id']) && $_GET['action']==="add" && at_est_entier($_GET['id'])){
-        //récupération du prix pour éviter les fraudes (impossible de placer prix dans la queryString)
+        //Ici : récupération du prix dans lme tableau contenant tous les livres pour éviter les fraudes 
+        //(impossible de placer prix dans la queryString, sinon il serait modifiable)
         $id=-1;
         $size=count($all_books);
         for($i=0;$i<$size;++$i){
@@ -143,6 +145,14 @@ function atl_get_action($all_books,$bd){
     }
 }
 
+/**
+ *  Affichage d'une section de livres.
+ *  Soit nouveautés, soit top des ventes.
+ *
+ *  @param  array       $tLivres      tableau de tableaux associatifs des infos sur un livre (id, auteurs(nom, prenom), titre, prix, pages, ISBN13, edWeb, edNom)
+ *  @param  int         $nom          1 si affichage des nouveautés, 2 pour le top des ventes
+ *
+ */
 function atl_aff_section_livres($num, $tLivres) {
     echo '<section>';
     if ($num == 1){
@@ -154,10 +164,10 @@ function atl_aff_section_livres($num, $tLivres) {
               '<p>Voici les 4 articles les plus vendus :</p>';
     }
 
+    //Afichage des livres
     foreach ($tLivres as $livre) {
         echo 
             '<figure>',
-                // TODO : à modifier pour le projet  
                 '<a class="addToCart" href="',$_SERVER['REQUEST_URI'],'?action=add&id=',$livre['id'],'" title="Ajouter au panier"></a>',
                 '<a class="addToWishlist"  href="',$_SERVER['REQUEST_URI'],'?action=addW&id=',$livre['id'],'" title="Ajouter à la liste de cadeaux"></a>',
                 '<a href="php/details.php?article=', $livre['id'], '" title="Voir détails"><img src="./images/livres/', 
@@ -189,16 +199,6 @@ Le prix du livre n'est donc pas modifiable par l'utilisateur etc...
 La seul chose que ce dernier peut faire en manipulant la querystring c'est ajouter/supprimer/modifier la quantité manuellement
 en saisissant les couples correspondant dans la querystring sur une page donnée. Cela ne réprensente donc aucunement un danger,
 toutes les vérifications concernant les valeurs étant faites.
-
 */
 
-//TODO :
-
-/*** Important
- - l'adresse dans compte
-***/
-
-/*** Modification avant rendu 
- - urlencode pour url?cle=urlencore(blabla)
-***/
 ?>

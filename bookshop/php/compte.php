@@ -226,7 +226,7 @@ function atl_traitement_modification($t,$bd,$res) {
             $erreurs[] = 'L\'adresse ne peut pas contenir de code HTML.';
         }else {
             mb_regex_encoding ('UTF-8'); //définition de l'encodage des caractères pour les expressions rationnelles multi-octets
-            if( !mb_ereg_match('[0-9]*[[:alpha:]]([\' -]?[[:alpha:]]+)*$', $adresse)){
+            if( !mb_ereg_match('[0-9]*[[[:blank:]][[:alpha:]]]([\'[[:blank:]]-]?[[:alpha:]]+)*$', $adresse)){
                 $erreurs[] = 'L\'adresse contient des caractères non autorisés';
             }
         }

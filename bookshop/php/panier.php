@@ -43,6 +43,7 @@ function atl_aff_contenu(){
         // ouverture de la connexion, requête
         $bd = at_bd_connecter();
     
+        //Récupération des articles
         $sql =  "SELECT liID, liTitre, liPrix, liPages, liISBN13, liResume, edNom, edWeb, auNom, auPrenom 
         FROM livres,editeurs,aut_livre,auteurs
         WHERE al_IDAuteur = auID

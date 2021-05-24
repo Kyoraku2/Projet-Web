@@ -73,7 +73,7 @@ function atl_aff_contenu(){
     //Remplissage des commande dans un second temps
     $lastCmdID=-1;
     while($t = mysqli_fetch_assoc($res)){
-        if ($t['liID'] != $lastBookID) {
+        if ($t['liID'] != $lastBookID || ($t['liID'] == $lastBookID && $t['coID'] != $lastCmdID)) {
             if ($lastBookID != -1) {
                 $all_commands[$lastCmdID][]=$livre;
             }
@@ -101,7 +101,6 @@ function atl_aff_contenu(){
     if ($lastBookID != -1) {
         $all_commands[$lastCmdID][]=$livre;
     }
-    
     $size=count($all_commands);
     if($size===0){
         echo '<p>Vous n\'avez passé aucune commande sur bookshop</p>';
