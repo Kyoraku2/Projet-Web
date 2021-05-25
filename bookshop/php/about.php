@@ -26,7 +26,7 @@ ob_end_flush();
 function atl_aff_contenu(){
     echo '<h1>A propos de bookshop</h1>',
     '<h2>Notre entreprise</h2>',
-    '<p>Tout ce qu\'il y a plus haut ça veut rien dire. mais vous en faites pas c\'est sympa par ici.<span class=font6>(vraiment en plus c\'est pas un mensonge)</span></p>';
+    '<p>Tout ce qu\'il y a plus haut ça veut rien dire. Mais vous en faites pas c\'est sympa par ici.<span class=font6>(vraiment en plus c\'est pas un mensonge)</span></p>';
 }
 
 ?>

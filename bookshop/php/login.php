@@ -93,7 +93,7 @@ function atl_aff_contenu($err) {
             '<table>',
                 '<tr>',
                     '<td>Vous n\'êtes encore inscrit ?</td>',
-                    '<td><input type="submit" name="btnInscription" value="Inscrivez vous"></td>',
+                    '<td><input type="submit" name="btnInscription" value="Inscrivez vous" style="width:130px;"></td>',
                 '</tr>',
             '</table>',
         '</form>';

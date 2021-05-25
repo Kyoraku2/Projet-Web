@@ -75,7 +75,7 @@ function atl_aff_contenu($recherche, $erreurs) {
     //Variables de pagination
     $position=-1;
     $totalBooks=-1;
-    $pagination=1;
+    $pagination=5;
     if(isset($_GET['p']) && at_est_entier($_GET['p'])) {
         $position = (int) $_GET['p'];
     }
